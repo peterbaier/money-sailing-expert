@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sailing Savers · Practical, upbeat tips for boaters</title>
+  <meta name="description" content="Money-saving and maintenance tips for sailors and boaters. Clean, magazine-style layout inspired by Practical Boat Owner." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⛵️</text></svg>">
+  <!-- Tailwind via CDN (no build step, works on GitHub Pages & Netlify) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Tailwind config for fonts + colors
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { display: ['ui-sans-serif','system-ui','-apple-system','Segoe UI','Roboto','Inter','sans-serif'] },
+          colors: {
+            ocean: {
+              50: '#eef8ff', 100: '#d8f0ff', 200: '#b9e3ff', 300: '#8dd0ff', 400: '#56b5ff',
+              500: '#2996f5', 600: '#1976d2', 700: '#155fa9', 800: '#124f8b', 900: '#0f406f'
+            },
+            kelp: { 500: '#1d7a59' },
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Smooth card hover */
+    .card { transition: transform .2s ease, box-shadow .2s ease; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,.08); }
+    .prose a { text-decoration: underline; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-display">
+  <!-- Top bar -->
+  <header class="sticky top-0 z-50 backdrop-blur bg-white/80 border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
+      <a href="#" class="flex items-center gap-2 font-semibold text-ocean-800">
+        <span class="text-2xl">⛵️</span>
+        <span class="text-lg tracking-tight">Sailing Savers</span>
+      </a>
+      <nav class="ml-auto hidden md:flex items-center gap-6 text-slate-700">
+        <a class="hover:text-ocean-700" href="#articles">Articles</a>
+        <a class="hover:text-ocean-700" href="#categories">Categories</a>
+        <a class="hover:text-ocean-700" href="#newsletter">Newsletter</a>
+        <button id="signinBtn" class="rounded-full px-3 py-1.5 bg-ocean-600 text-white hover:bg-ocean-700">Sign in (coming soon)</button>
+      </nav>
+      <button class="md:hidden ml-auto" id="menuBtn" aria-label="Open menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-700"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+    <!-- mobile menu -->
+    <div id="mobileMenu" class="md:hidden hidden border-t border-slate-200 bg-white">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-2">
+        <a class="py-1" href="#articles">Articles</a>
+        <a class="py-1" href="#categories">Categories</a>
+        <a class="py-1" href="#newsletter">Newsletter</a>
+        <button id="signinBtnMobile" class="mt-2 rounded-lg px-3 py-2 bg-ocean-600 text-white">Sign in (coming soon)</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-ocean-100 via-white to-kelp-500/5 pointer-events-none"></div>
+    <div class="max-w-6xl mx-auto px-4 py-16 md:py-24 relative">
+      <div class="grid md:grid-cols-2 gap-10 items-center">
+        <div>
+          <h1 class="text-4xl md:text-5xl font-extrabold leading-tight text-ocean-900">Save money, sail more.</h1>
+          <p class="mt-4 text-lg text-slate-700 max-w-prose">Practical, upbeat tips for sailing and boating on a budget—maintenance hacks, DIY guides, smart gear choices, and seasonal checklists. Inspired by clean, magazine-style layouts for effortless reading.</p>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a href="#articles" class="px-5 py-3 rounded-xl bg-ocean-600 text-white hover:bg-ocean-700">Browse articles</a>
+            <a href="#search" class="px-5 py-3 rounded-xl border border-ocean-600 text-ocean-700 hover:bg-ocean-50">Search topics</a>
+          </div>
+          <p class="mt-4 text-sm text-slate-600">Free to browse. Accounts coming soon for bookmarks, comments, and member deals.</p>
+        </div>
+        <div class="relative">
+          <div class="aspect-[4/3] rounded-2xl shadow-xl overflow-hidden ring-1 ring-slate-200">
+            <!-- Decorative SVG waves -->
+            <svg viewBox="0 0 800 600" class="w-full h-full" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Abstract ocean waves">
+              <defs>
+                <linearGradient id="g1" x1="0" x2="1">
+                  <stop offset="0%" stop-color="#8dd0ff"/>
+                  <stop offset="100%" stop-color="#2996f5"/>
+                </linearGradient>
+              </defs>
+              <rect width="800" height="600" fill="#eef8ff"/>
+              <path d="M0,420 C150,360 260,480 400,420 C540,360 660,460 800,400 L800,600 L0,600 Z" fill="url(#g1)" opacity="0.9"/>
+              <path d="M0,450 C160,390 260,510 400,450 C540,390 660,490 800,430 L800,600 L0,600 Z" fill="#1976d2" opacity="0.25"/>
+              <g>
+                <circle cx="140" cy="180" r="55" fill="#ffd166"/>
+                <rect x="470" y="210" width="180" height="110" fill="#fff" stroke="#124f8b" stroke-width="4"/>
+                <polygon points="470,210 560,150 560,210" fill="#fff" stroke="#124f8b" stroke-width="4"/>
+                <line x1="560" y1="210" x2="560" y2="320" stroke="#124f8b" stroke-width="4"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Search & Filters -->
+  <section id="search" class="max-w-6xl mx-auto px-4 pt-6 pb-2">
+    <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-4 md:p-6">
+      <div class="flex flex-col md:flex-row md:items-center gap-4">
+        <div class="flex-1">
+          <label for="q" class="block text-sm font-medium text-slate-600">Search articles</label>
+          <input id="q" type="search" placeholder="Try: antifouling, fibreglass, paint, winterizing…" class="mt-1 w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500" />
+        </div>
+        <div class="flex-1">
+          <label class="block text-sm font-medium text-slate-600">Filter by category</label>
+          <div class="mt-2 flex flex-wrap gap-2" id="filters"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categories (magazine-style strip) -->
+  <section id="categories" class="max-w-6xl mx-auto px-4 py-6">
+    <h2 class="text-xl font-bold text-slate-800 mb-3">Explore categories</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+      <a data-filter="Maintenance" class="category-tile rounded-2xl p-4 bg-white border border-slate-200 hover:border-ocean-500 card cursor-pointer">
+        <p class="text-sm font-semibold">Maintenance</p>
+        <p class="text-xs text-slate-600">Prevent & fix</p>
+      </a>
+      <a data-filter="Painting" class="category-tile rounded-2xl p-4 bg-white border border-slate-200 hover:border-ocean-500 card cursor-pointer">
+        <p class="text-sm font-semibold">Painting</p>
+        <p class="text-xs text-slate-600">Gelcoat & topsides</p>
+      </a>
+      <a data-filter="Fibreglass" class="category-tile rounded-2xl p-4 bg-white border border-slate-200 hover:border-ocean-500 card cursor-pointer">
+        <p class="text-sm font-semibold">Fibreglass</p>
+        <p class="text-xs text-slate-600">Repair & laminate</p>
+      </a>
+      <a data-filter="Budget" class="category-tile rounded-2xl p-4 bg-white border border-slate-200 hover:border-ocean-500 card cursor-pointer">
+        <p class="text-sm font-semibold">Budget</p>
+        <p class="text-xs text-slate-600">Save & source</p>
+      </a>
+      <a data-filter="Safety" class="category-tile rounded-2xl p-4 bg-white border border-slate-200 hover:border-ocean-500 card cursor-pointer">
+        <p class="text-sm font-semibold">Safety</p>
+        <p class="text-xs text-slate-600">Checklists</p>
+      </a>
+      <a data-filter="DIY" class="category-tile rounded-2xl p-4 bg-white border border-slate-200 hover:border-ocean-500 card cursor-pointer">
+        <p class="text-sm font-semibold">DIY</p>
+        <p class="text-xs text-slate-600">Projects</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- Articles grid -->
+  <section id="articles" class="max-w-6xl mx-auto px-4 py-8">
+    <div class="flex items-end justify-between mb-4">
+      <h2 class="text-2xl font-bold text-slate-900">Latest & popular</h2>
+      <div class="text-sm text-slate-600" id="count"></div>
+    </div>
+    <div id="grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+  </section>
+
+  <!-- Newsletter (Netlify Forms ready) -->
+  <section id="newsletter" class="bg-white border-t border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 py-12 grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <h3 class="text-xl font-bold">Get fresh money-saving tips</h3>
+        <p class="mt-2 text-slate-700">Join our monthly roundup of DIY guides and deals. Zero spam. Unsubscribe anytime.</p>
+      </div>
+      <form name="newsletter" method="POST" data-netlify="true" class="flex gap-2 w-full">
+        <input type="email" name="email" required placeholder="you@email" class="flex-1 rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500"/>
+        <button class="rounded-xl px-5 py-3 bg-kelp-500 text-white hover:brightness-90">Subscribe</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-10 text-sm text-slate-600">
+    <div class="max-w-6xl mx-auto px-4 grid md:grid-cols-3 gap-6">
+      <div>
+        <p class="font-semibold text-slate-800">Sailing Savers</p>
+        <p class="mt-2">Practical tips to keep costs down and your boat shipshape.</p>
+      </div>
+      <div>
+        <p class="font-semibold text-slate-800">Coming soon</p>
+        <ul class="mt-2 space-y-1 list-disc list-inside">
+          <li>Accounts for bookmarks & comments</li>
+          <li>Member gear deals</li>
+          <li>Project trackers</li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-semibold text-slate-800">Links</p>
+        <ul class="mt-2 space-y-1">
+          <li><a href="#articles" class="hover:text-ocean-700">Articles</a></li>
+          <li><a href="#categories" class="hover:text-ocean-700">Categories</a></li>
+          <li><a href="#newsletter" class="hover:text-ocean-700">Newsletter</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="max-w-6xl mx-auto px-4 mt-8 text-xs text-slate-500">© <span id="year"></span> Sailing Savers</div>
+  </footer>
+
+  <!-- Sign-in placeholder modal -->
+  <div id="modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+      <div class="flex items-start justify-between">
+        <h3 class="text-lg font-bold">Accounts coming soon</h3>
+        <button id="closeModal" aria-label="Close" class="p-1">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <p class="mt-3 text-slate-700">We’re building sign-in for bookmarks, comments, and member perks. For a future-ready path, deploy on Netlify and enable <a href="https://docs.netlify.com/visitor-access/identity/" class="text-ocean-700 underline" target="_blank" rel="noreferrer">Netlify Identity</a>. For now, everything is free to browse 💙</p>
+      <div class="mt-4 text-right">
+        <button id="closeModal2" class="rounded-xl px-4 py-2 bg-ocean-600 text-white hover:bg-ocean-700">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data + Render script (simple client-side search / filter) -->
+  <script>
+    const categories = ["Maintenance","Painting","Fibreglass","Budget","Safety","DIY"];
+
+    const articles = [
+      {
+        id: 'a1',
+        title: 'Budget Antifouling: Save 40% Without Losing Performance',
+        excerpt: 'How to choose value paints, prep efficiently, and stretch each tin further with smart coverage tactics.',
+        category: 'Painting',
+        tags: ['antifouling','paint','cost-saving'],
+        minutes: 6
+      },
+      {
+        id: 'a2',
+        title: 'Fibreglass Repair 101: From Hairline Cracks to Hull Dings',
+        excerpt: 'The no-drama approach to laminating, fairing, and finishing — gear you need and what you can skip.',
+        category: 'Fibreglass',
+        tags: ['repair','laminate','gelcoat'],
+        minutes: 8
+      },
+      {
+        id: 'a3',
+        title: 'Winterizing on a Shoestring',
+        excerpt: 'Avoid spring surprises with a minimalist checklist — fuel, water, batteries, sails, and covers.',
+        category: 'Maintenance',
+        tags: ['winter','checklist','storage'],
+        minutes: 5
+      },
+      {
+        id: 'a4',
+        title: 'DIY Gelcoat Touch-ups That Actually Blend',
+        excerpt: 'Colour matching, microballoons, and the secret to a glossy final polish — without pro prices.',
+        category: 'Painting',
+        tags: ['gelcoat','finish','polish'],
+        minutes: 7
+      },
+      {
+        id: 'a5',
+        title: 'Rigging on a Budget: Smart Replacements & When to Wait',
+        excerpt: 'Prioritize safety-critical items, group labour, and source hardware cleverly to halve the bill.',
+        category: 'Budget',
+        tags: ['rigging','hardware','sourcing'],
+        minutes: 6
+      },
+      {
+        id: 'a6',
+        title: 'Safety Gear: What to Buy Used (and What Never to)',
+        excerpt: 'PFDs, flares, EPIRBs, and harnesses — understand lifespans and where savings are false economy.',
+        category: 'Safety',
+        tags: ['PFD','EPIRB','flares'],
+        minutes: 5
+      },
+      {
+        id: 'a7',
+        title: 'Simple Deck Paint That Lasts',
+        excerpt: 'Non-skid recipes, surface prep shortcuts, and avoiding UV chalking for a clean, durable finish.',
+        category: 'Painting',
+        tags: ['deck','non-skid','UV'],
+        minutes: 4
+      },
+      {
+        id: 'a8',
+        title: 'Core Skills: Small-Scale Fibreglass Layups',
+        excerpt: 'Cloths vs. mats, orienting fibres, and getting the right resin ratio without fancy scales.',
+        category: 'Fibreglass',
+        tags: ['cloth','mat','resin'],
+        minutes: 9
+      },
+      {
+        id: 'a9',
+        title: 'Preventive Maintenance That Actually Saves Money',
+        excerpt: 'A quarterly checklist that cuts emergency call-outs and extends engine and gear life.',
+        category: 'Maintenance',
+        tags: ['engine','checklist','service'],
+        minutes: 6
+      },
+    ];
+
+    // Render filters
+    const filtersEl = document.getElementById('filters');
+    const selected = new Set();
+    categories.forEach(cat => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'px-3 py-1.5 rounded-full border border-slate-300 text-slate-700 hover:border-ocean-500 hover:text-ocean-700';
+      b.textContent = cat;
+      b.setAttribute('data-cat', cat);
+      b.addEventListener('click', () => {
+        if (selected.has(cat)) selected.delete(cat); else selected.add(cat);
+        b.classList.toggle('bg-ocean-50');
+        render();
+      });
+      filtersEl.appendChild(b);
+    });
+
+    // Category tiles as filters
+    document.querySelectorAll('.category-tile').forEach(tile => {
+      tile.addEventListener('click', () => {
+        const cat = tile.getAttribute('data-filter');
+        // toggle in selected
+        if (selected.has(cat)) selected.delete(cat); else selected.add(cat);
+        render();
+        // scroll to grid
+        document.getElementById('articles').scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+
+    // Search
+    const qEl = document.getElementById('q');
+    qEl.addEventListener('input', () => render());
+
+    const grid = document.getElementById('grid');
+    const count = document.getElementById('count');
+
+    function render() {
+      const q = qEl.value.trim().toLowerCase();
+      let list = articles.filter(a => {
+        const inCat = selected.size ? selected.has(a.category) : true;
+        const inSearch = !q || (
+          a.title.toLowerCase().includes(q) ||
+          a.excerpt.toLowerCase().includes(q) ||
+          a.tags.join(' ').toLowerCase().includes(q) ||
+          a.category.toLowerCase().includes(q)
+        );
+        return inCat && inSearch;
+      });
+      grid.innerHTML = '';
+      list.forEach(a => grid.appendChild(articleCard(a)));
+      count.textContent = `${list.length} article${list.length===1?'':'s'} shown`;
+    }
+
+    function articleCard(a) {
+      const el = document.createElement('article');
+      el.className = 'card rounded-2xl bg-white border border-slate-200 overflow-hidden flex flex-col';
+      el.innerHTML = `
+        <div class="relative">
+          <div class="h-36 bg-gradient-to-br from-ocean-200 to-ocean-400"></div>
+          <span class="absolute top-2 left-2 text-xs bg-white/90 rounded-full px-2 py-1 border border-white/70">${a.category}</span>
+        </div>
+        <div class="p-4 flex-1 flex flex-col">
+          <h3 class="font-semibold text-slate-900">${a.title}</h3>
+          <p class="mt-2 text-slate-700 text-sm flex-1">${a.excerpt}</p>
+          <div class="mt-3 flex items-center justify-between text-xs text-slate-600">
+            <div class="flex gap-1 flex-wrap">${a.tags.map(t=>`<span class='px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200'>${t}</span>`).join('')}</div>
+            <span>⏱️ ${a.minutes} min</span>
+          </div>
+          <a href="#" class="mt-4 inline-flex items-center gap-2 text-ocean-700 hover:underline">Read guide <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+        </div>`;
+      return el;
+    }
+
+    // Modal & menu
+    const modal = document.getElementById('modal');
+    document.getElementById('signinBtn').addEventListener('click', ()=> modal.classList.remove('hidden'));
+    document.getElementById('signinBtnMobile').addEventListener('click', ()=> modal.classList.remove('hidden'));
+    document.getElementById('closeModal').addEventListener('click', ()=> modal.classList.add('hidden'));
+    document.getElementById('closeModal2').addEventListener('click', ()=> modal.classList.add('hidden'));
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    menuBtn.addEventListener('click', ()=> mobileMenu.classList.toggle('hidden'));
+
+    // Footer year, initial render
+    document.getElementById('year').textContent = new Date().getFullYear();
+    render();
+  </script>
+</body>
+</html>
