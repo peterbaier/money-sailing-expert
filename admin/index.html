@@ -3,135 +3,135 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sailing Savers · Admin</title>
-  <meta name="description" content="Create and edit articles with a polished UI matching the main site." />
+  <title>Sailing Savers · Admin Editor</title>
+  <meta name="description" content="Create and edit Sailing Savers articles with a clean, focused editor and live Markdown preview." />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⛵️</text></svg>">
+
+  <!-- Tailwind (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { theme: { extend: { colors: { ocean:{50:'#eef8ff',100:'#d8f0ff',200:'#b9e3ff',300:'#8dd0ff',400:'#56b5ff',500:'#2996f5',600:'#1976d2',700:'#155fa9',800:'#124f8b',900:'#0f406f'}, kelp:{500:'#1d7a59'} } } } }
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ocean: {50:'#eef8ff',100:'#d8f0ff',200:'#b9e3ff',300:'#8dd0ff',400:'#56b5ff',500:'#2996f5',600:'#1976d2',700:'#155fa9',800:'#124f8b',900:'#0f406f'},
+            kelp: {500:'#1d7a59'}
+          },
+          boxShadow: { soft: '0 10px 25px rgba(0,0,0,.07)' }
+        }
+      }
+    };
   </script>
   <style>
-    .card { transition: transform .2s ease, box-shadow .2s ease; }
-    .card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,.08); }
-    .input { @apply w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500; }
-    .pill { @apply inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs; }
+    .card { /* Tailwind @apply is only available in a real build; keep raw classes in HTML. */ }
+    .pill { display:inline-flex; align-items:center; gap:.25rem; padding:.25rem .5rem; border-radius:999px; background:#f1f5f9; border:1px solid #e2e8f0; font-size:.75rem; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-900 font-sans min-h-screen">
+<body class="bg-slate-50 text-slate-900">
   <!-- Header -->
-  <header class="sticky top-0 z-40 backdrop-blur bg-white/80 border-b border-slate-200">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
+  <header class="sticky top-0 z-50 backdrop-blur bg-white/80 border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
       <a href="/" class="flex items-center gap-2 font-semibold text-ocean-800">
         <span class="text-2xl">⛵️</span>
         <span class="text-lg tracking-tight">Sailing Savers — Admin</span>
       </a>
       <div class="ml-auto flex items-center gap-2">
-        <span id="status" class="text-sm text-slate-600 hidden">Checking auth…</span>
-        <button id="loginBtn" class="rounded-full px-3 py-1.5 bg-ocean-600 text-white hover:bg-ocean-700">Login / Sign up</button>
+        <span id="status" class="text-sm text-slate-600"></span>
+        <button id="loginBtn" class="rounded-xl px-4 py-2 bg-ocean-600 text-white hover:bg-ocean-700">Login / Sign up</button>
       </div>
     </div>
   </header>
 
-  <!-- Main -->
-  <main class="max-w-6xl mx-auto px-4 py-8 grid lg:grid-cols-3 gap-6">
+  <!-- Main layout -->
+  <main class="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Sidebar: list -->
+    <aside class="lg:order-first lg:col-span-1 bg-white border border-slate-200 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,.07)] p-4 h-fit sticky top-[88px]">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-lg font-bold">Articles</h2>
+        <button id="refreshBtn" class="rounded-xl px-3 py-1.5 border border-slate-300 hover:bg-slate-50">Refresh</button>
+      </div>
+      <input id="search" class="w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500 mt-1" placeholder="Search title, slug, tag…" />
+      <ul id="list" class="mt-3 space-y-2 max-h-[65vh] overflow-auto"></ul>
+      <p class="mt-3 text-xs text-slate-500">Click an item to load it into the editor.</p>
+    </aside>
+
     <!-- Editor -->
-    <section class="lg:col-span-2">
-      <div class="card bg-white border border-slate-200 rounded-2xl p-6">
-        <h1 class="text-2xl font-bold">Write article</h1>
-        <p class="text-slate-600 text-sm mt-1">Create or update an article. Drafts are saved as regular rows — control visibility in your frontend.</p>
-
-        <form id="editor" class="mt-6 space-y-5">
-          <div class="grid md:grid-cols-2 gap-4">
-            <label class="block">
-              <span class="text-sm font-medium text-slate-700">Title</span>
-              <input id="title" class="input mt-1" placeholder="Budget Antifouling: Save 40%…" required />
-            </label>
-            <label class="block">
-              <span class="text-sm font-medium text-slate-700">Slug</span>
-              <input id="slug" class="input mt-1 font-mono" placeholder="budget-antifouling" required />
-              <p class="text-xs text-slate-500 mt-1">Auto-generated from title — you can edit.</p>
-            </label>
-          </div>
-
+    <section class="lg:col-span-1 bg-white border border-slate-200 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,.07)] p-6">
+      <h1 class="text-xl font-bold">Editor</h1>
+      <form id="editor" class="mt-5 space-y-4">
+        <div class="grid sm:grid-cols-2 gap-4">
           <label class="block">
-            <span class="text-sm font-medium text-slate-700">Excerpt</span>
-            <textarea id="excerpt" class="input mt-1" rows="2" placeholder="Short teaser shown in lists"></textarea>
+            <span class="text-sm font-medium text-slate-700">Title</span>
+            <input id="title" class="w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500 mt-1" placeholder="Budget Antifouling: Save 40%…" required />
           </label>
-
-          <div class="grid md:grid-cols-3 gap-4">
-            <label class="block">
-              <span class="text-sm font-medium text-slate-700">Category</span>
-              <select id="category" class="input mt-1">
-                <option>Maintenance</option>
-                <option>Painting</option>
-                <option>Fibreglass</option>
-                <option>Budget</option>
-                <option>Safety</option>
-                <option>DIY</option>
-              </select>
-            </label>
-            <label class="block">
-              <span class="text-sm font-medium text-slate-700">Read time (min)</span>
-              <input id="minutes" type="number" min="1" value="6" class="input mt-1" />
-            </label>
-            <label class="block">
-              <span class="text-sm font-medium text-slate-700">Tags</span>
-              <input id="tagsInput" class="input mt-1" placeholder="antifouling, paint, money" />
-              <div id="tags" class="mt-2 flex flex-wrap gap-2"></div>
-            </label>
-          </div>
-
           <label class="block">
-            <span class="text-sm font-medium text-slate-700">Body (Markdown)</span>
-            <textarea id="body" class="input mt-1 font-mono" rows="12" placeholder="## Heading\nYour content here…"></textarea>
+            <span class="text-sm font-medium text-slate-700">Slug</span>
+            <input id="slug" class="w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500 mt-1 font-mono" placeholder="budget-antifouling" required />
+            <p class="text-xs text-slate-500 mt-1">Auto-fills from title — you can edit.</p>
           </label>
-
-          <div class="flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-              <button id="saveBtn" type="submit" class="rounded-xl px-5 py-3 bg-kelp-500 text-white hover:brightness-95">Save</button>
-              <button id="resetBtn" type="button" class="rounded-xl px-5 py-3 border border-slate-300 hover:bg-slate-50">Reset</button>
-            </div>
-            <div class="text-sm text-slate-500" id="saveStatus"></div>
-          </div>
-        </form>
-      </div>
-
-      <!-- Live Preview -->
-      <div class="mt-6 card bg-white border border-slate-200 rounded-2xl p-6">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-bold">Preview</h2>
-          <label class="text-sm text-slate-600"><input id="autoPreview" type="checkbox" class="mr-2" checked /> Auto-update</label>
         </div>
-        <article id="preview" class="prose max-w-none mt-4">
-          <h3 class="text-2xl font-semibold" id="pTitle">—</h3>
-          <p class="text-slate-600" id="pExcerpt">—</p>
-          <div class="mt-2 flex items-center gap-2 text-xs text-slate-600"><span id="pCategory" class="pill">Category</span><span id="pTags" class="flex flex-wrap gap-2"></span><span id="pMinutes" class="pill">⏱️ 0 min</span></div>
-          <hr class="my-4" />
-          <pre id="pBody" class="whitespace-pre-wrap"></pre>
-        </article>
-      </div>
+
+        <label class="block">
+          <span class="text-sm font-medium text-slate-700">Excerpt</span>
+          <textarea id="excerpt" class="w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500 mt-1" rows="2" placeholder="Short teaser shown on cards"></textarea>
+        </label>
+
+        <div class="grid sm:grid-cols-3 gap-4">
+          <label class="block">
+            <span class="text-sm font-medium text-slate-700">Category</span>
+            <select id="category" class="w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500 mt-1">
+              <option>Maintenance</option>
+              <option>Painting</option>
+              <option>Fibreglass</option>
+              <option>Budget</option>
+              <option>Safety</option>
+              <option>DIY</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="text-sm font-medium text-slate-700">Read time (min)</span>
+            <input id="minutes" type="number" min="1" value="6" class="w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500 mt-1" />
+          </label>
+          <label class="block">
+            <span class="text-sm font-medium text-slate-700">Tags</span>
+            <input id="tagsInput" class="w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500 mt-1" placeholder="antifouling, paint, money" />
+            <div id="tags" class="mt-2 flex flex-wrap gap-2"></div>
+          </label>
+        </div>
+
+        <label class="block">
+          <span class="text-sm font-medium text-slate-700">Body (Markdown)</span>
+          <textarea id="body" class="w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500 mt-1 font-mono" rows="14" placeholder="## Heading&#10;Your content here…"></textarea>
+          <div class="flex justify-between text-xs text-slate-500 mt-1">
+            <span id="countBody">0 chars</span>
+            <a class="underline" href="https://www.markdownguide.org/cheat-sheet/" target="_blank" rel="noreferrer">Markdown help</a>
+          </div>
+        </label>
+
+        <div class="flex items-center justify-between gap-3 pt-2">
+          <div class="flex items-center gap-2">
+            <button id="saveBtn" type="submit" class="rounded-xl px-4 py-2 bg-kelp-500 text-white hover:brightness-95">Save</button>
+            <button id="newBtn" type="button" class="rounded-xl px-4 py-2 border border-slate-300 hover:bg-slate-50">New</button>
+          </div>
+          <div class="text-sm text-slate-500" id="saveStatus"></div>
+        </div>
+      </form>
     </section>
 
-    <!-- Sidebar: Existing articles -->
-    <aside>
-      <div class="card bg-white border border-slate-200 rounded-2xl p-6">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="text-xl font-bold">Articles</h2>
-          <button id="refreshBtn" class="rounded-lg px-3 py-1.5 border border-slate-300 hover:bg-slate-50">Refresh</button>
-        </div>
-        <input id="search" class="input" placeholder="Search by title, slug, tag…" />
-        <ul id="list" class="mt-4 space-y-2 max-h-[60vh] overflow-auto"></ul>
+    <!-- Live preview -->
+    <section class="lg:col-span-1 bg-white border border-slate-200 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,.07)] p-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold">Live preview</h2>
+        <label class="text-sm text-slate-600"><input id="autoPreview" type="checkbox" class="mr-2" checked /> Auto-update</label>
       </div>
-
-      <div class="mt-6 card bg-white border border-slate-200 rounded-2xl p-4 text-xs text-slate-600">
-        <p><strong>Tips</strong></p>
-        <ul class="list-disc list-inside mt-1 space-y-1">
-          <li>Title → Slug auto-fills; edit if needed.</li>
-          <li>Tags: comma-separated. Click tags to remove.</li>
-          <li>Only admins can save (checked via server function).</li>
-        </ul>
-      </div>
-    </aside>
+      <article class="prose max-w-none mt-4">
+        <h3 id="pvTitle" class="text-2xl font-semibold"></h3>
+        <p id="pvMeta" class="text-sm text-slate-600"></p>
+        <div id="pvTags" class="mt-1 flex flex-wrap gap-2"></div>
+        <hr class="my-4" />
+        <div id="pvBody" class="prose"></div>
+      </article>
+    </section>
   </main>
 
   <!-- Toast -->
@@ -140,204 +140,112 @@
   </div>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-    // ======= CONFIG =======
-     async function initSupabase() {
-    // Fetch safe public config from Netlify Function
-    const res = await fetch('/.netlify/functions/public-config', { cache: 'no-store' });
-    if (!res.ok) { console.error('Failed to load public config'); return null; }
-    const { SUPABASE_URL, SUPABASE_ANON_KEY } = await res.json();
-    return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  }
-
-  (async () => {
-    const supabase = await initSupabase();
-    if (!supabase) return;
-
-    // ... your existing auth + article code here ...
-    // e.g., supabase.auth.getUser(), signInWithOtp, fetch articles, etc.
-  
-
-    const categories = ["Maintenance","Painting","Fibreglass","Budget","Safety","DIY"];
-
-    // ======= AUTH =======
-    const loginBtn = document.getElementById('loginBtn');
-    const statusEl = document.getElementById('status');
-
-    async function login() {
-      const email = prompt('Enter your email for a magic link:');
-      if (!email) return;
-      const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
-      if (error) alert(error.message); else alert('Check your inbox for the login link.');
+    // helpers
+    const $ = (id)=>document.getElementById(id);
+    const toSlug = (s)=> s.toLowerCase().trim().replace(/[^a-z0-9\\s-]/g,'').replace(/\\s+/g,'-').replace(/-+/g,'-');
+    const showToast = (msg)=>{ const t = $('toast'); t.firstElementChild.textContent = msg; t.classList.remove('hidden'); setTimeout(()=>t.classList.add('hidden'),1400); };
+  </script>
+  <script>
+    // Supabase client via public-config function (no secrets in build)
+    let supabase;
+    async function initSupabase() {
+      const res = await fetch('/.netlify/functions/public-config', { cache: 'no-store' });
+      if (!res.ok) { alert('Failed to load config'); return; }
+      const { SUPABASE_URL, SUPABASE_ANON_KEY } = await res.json();
+      const sdk = document.createElement('script');
+      sdk.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+      await new Promise(r=>{ sdk.onload=r; document.body.appendChild(sdk); });
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     }
-    async function logout() { await supabase.auth.signOut(); location.reload(); }
+  </script>
+  <script>
+    // App logic
+    const titleEl=$('title'), slugEl=$('slug'), excerptEl=$('excerpt'), catEl=$('category'), minEl=$('minutes'), tagsIn=$('tagsInput'), tagsWrap=$('tags'), bodyEl=$('body');
+    const pvTitle=$('pvTitle'), pvMeta=$('pvMeta'), pvTags=$('pvTags'), pvBody=$('pvBody'), countBody=$('countBody');
+    const autoPreview=$('autoPreview');
+    const loginBtn=$('loginBtn'), statusEl=$('status');
+    const list=$('list'), search=$('search');
 
-    supabase.auth.onAuthStateChange((_evt, _session)=>renderAuth());
-    renderAuth();
-
-    async function renderAuth(){
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        loginBtn.textContent = `Logout (${user.email})`;
-        loginBtn.onclick = logout;
-        statusEl.classList.remove('hidden');
-        statusEl.textContent = 'Logged in';
-      } else {
-        loginBtn.textContent = 'Login / Sign up';
-        loginBtn.onclick = login;
-        statusEl.classList.add('hidden');
-      }
-    }
-
-    // ======= EDITOR LOGIC =======
-    const el = (id)=>document.getElementById(id);
-    const title = el('title');
-    const slug = el('slug');
-    const excerpt = el('excerpt');
-    const category = el('category');
-    const minutes = el('minutes');
-    const tagsInput = el('tagsInput');
-    const tagsWrap = el('tags');
-    const body = el('body');
-    const saveBtn = el('saveBtn');
-    const saveStatus = el('saveStatus');
-
-    function toSlug(s){
-      return s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-');
-    }
-
-    title.addEventListener('input', ()=>{ if(!slug.dataset.touched){ slug.value = toSlug(title.value); } updatePreview(); });
-    slug.addEventListener('input', ()=>{ slug.dataset.touched = '1'; });
-
-    // Tags handling
-    function renderTags(list){
-      tagsWrap.innerHTML = '';
-      list.forEach((t,i)=>{
-        const b = document.createElement('button');
-        b.type = 'button'; b.className = 'pill'; b.textContent = t;
-        b.onclick = ()=>{ current.tags.splice(i,1); renderTags(current.tags); updatePreview(); };
-        tagsWrap.appendChild(b);
-      })
-    }
-    tagsInput.addEventListener('keydown', (e)=>{
-      if(e.key==='Enter' || e.key===','){
-        e.preventDefault();
-        const v = tagsInput.value.trim().replace(/,$/,'');
-        if(v && !current.tags.includes(v)) current.tags.push(v);
-        tagsInput.value=''; renderTags(current.tags); updatePreview();
-      }
-    });
-
-    // Preview
-    const autoPreview = el('autoPreview');
-    const pTitle = el('pTitle');
-    const pExcerpt = el('pExcerpt');
-    const pCategory = el('pCategory');
-    const pTags = el('pTags');
-    const pMinutes = el('pMinutes');
-    const pBody = el('pBody');
-
-    function updatePreview(){
-      if(!autoPreview.checked) return;
-      pTitle.textContent = title.value || '—';
-      pExcerpt.textContent = excerpt.value || '—';
-      pCategory.textContent = category.value || '—';
-      pTags.innerHTML = (current.tags||[]).map(t=>`<span class='pill'>${t}</span>`).join(' ');
-      pMinutes.textContent = `⏱️ ${Number(minutes.value||0)} min`;
-      pBody.textContent = body.value || '';
-    }
-
-    // Current article state
-    let current = { slug:'', title:'', excerpt:'', category:categories[0], minutes:6, tags:[], body:'' };
+    let current = { slug:'', title:'', excerpt:'', category:'Maintenance', minutes:6, tags:[], body:'' };
+    let articles = [];
 
     function syncToForm(a){
       current = { ...current, ...a };
-      title.value = a.title||'';
-      slug.value = a.slug||'';
-      excerpt.value = a.excerpt||'';
-      category.value = a.category || categories[0];
-      minutes.value = a.minutes || 6;
-      body.value = a.body || '';
-      renderTags(a.tags||[]);
+      titleEl.value = current.title||'';
+      if(!slugEl.dataset.touched) slugEl.value = current.slug||'';
+      else slugEl.value = current.slug||'';
+      excerptEl.value = current.excerpt||'';
+      catEl.value = current.category||'Maintenance';
+      minEl.value = current.minutes||6;
+      bodyEl.value = current.body||'';
+      renderTags(current.tags||[]);
       updatePreview();
     }
 
-    el('resetBtn').onclick = ()=>{ syncToForm({ slug:'', title:'', excerpt:'', category:categories[0], minutes:6, tags:[], body:'' }); };
-
-    // Save (calls Netlify Function)
-    el('editor').addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      saveBtn.disabled = true; saveStatus.textContent = 'Saving…';
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { saveBtn.disabled=false; saveStatus.textContent=''; return alert('Please log in first.'); }
-
-      const payload = {
-        slug: slug.value.trim(),
-        title: title.value.trim(),
-        excerpt: excerpt.value.trim(),
-        body: body.value,
-        category: category.value,
-        tags: current.tags,
-        minutes: Number(minutes.value||6)
-      };
-
-      const res = await fetch('/.netlify/functions/upsert-article', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-        body: JSON.stringify(payload)
+    function renderTags(listArr){
+      tagsWrap.innerHTML = '';
+      (listArr||[]).forEach((t,i)=>{
+        const b=document.createElement('button'); b.type='button'; b.className='pill'; b.textContent=t;
+        b.onclick=()=>{ current.tags.splice(i,1); renderTags(current.tags); updatePreview(); };
+        tagsWrap.appendChild(b);
       });
+    }
+
+    function updatePreview(){
+      if(!autoPreview.checked) return;
+      pvTitle.textContent = titleEl.value || '—';
+      pvMeta.textContent = `${catEl.value||''} • ⏱️ ${Number(minEl.value||0)} min`;
+      pvTags.innerHTML = (current.tags||[]).map(t=>`<span class=\"pill\">${t}</span>`).join('');
+      countBody.textContent = `${(bodyEl.value||'').length} chars`;
+      pvBody.innerHTML = marked.parse(bodyEl.value||'');
+    }
+
+    // Events
+    titleEl.addEventListener('input', ()=>{ if(!slugEl.dataset.touched){ slugEl.value = toSlug(titleEl.value); } updatePreview(); });
+    slugEl.addEventListener('input', ()=>{ slugEl.dataset.touched='1'; });
+    excerptEl.addEventListener('input', updatePreview);
+    catEl.addEventListener('change', updatePreview);
+    minEl.addEventListener('input', updatePreview);
+    bodyEl.addEventListener('input', updatePreview);
+    tagsIn.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===','){ e.preventDefault(); const v=tagsIn.value.trim().replace(/,$/,''); if(v && !current.tags.includes(v)){ current.tags.push(v); renderTags(current.tags); updatePreview(); } tagsIn.value=''; } });
+
+    // Auth
+    async function login(){ const email = prompt('Enter your email for a magic link:'); if (!email) return; const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } }); if (error) alert(error.message); else alert('Check your inbox for the login link.'); }
+    async function logout(){ await supabase.auth.signOut(); renderAuth(); }
+    async function renderAuth(){ const { data: { user } } = await supabase.auth.getUser(); if (user){ loginBtn.textContent = `Logout (${user.email})`; loginBtn.onclick = logout; statusEl.textContent='Logged in'; } else { loginBtn.textContent='Login / Sign up'; loginBtn.onclick = login; statusEl.textContent=''; } }
+
+    // Save via Netlify Function
+    async function saveArticle(){
+      const { data: { session } } = await supabase.auth.getSession();
+      if(!session) return alert('Please log in first.');
+      const payload = {
+        slug: slugEl.value.trim(),
+        title: titleEl.value.trim(),
+        excerpt: excerptEl.value.trim(),
+        body: bodyEl.value,
+        category: catEl.value,
+        tags: current.tags,
+        minutes: Number(minEl.value||6)
+      };
+      const res = await fetch('/.netlify/functions/upsert-article',{ method:'POST', headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}` }, body: JSON.stringify(payload) });
       const txt = await res.text();
-      saveBtn.disabled = false; saveStatus.textContent = '';
       if(!res.ok) return alert(txt);
       showToast('Saved');
       await loadArticles();
-    });
-
-    // ======= LIST & EDIT =======
-    const list = el('list');
-    const search = el('search');
-    el('refreshBtn').onclick = ()=>loadArticles();
-    search.addEventListener('input', ()=>renderList());
-
-    let articles = [];
-    async function loadArticles(){
-      const { data, error } = await supabase.from('articles').select('*').order('published_at', { ascending:false }).limit(200);
-      if (error) { console.error(error); return; }
-      articles = data || [];
-      renderList();
-    }
-    function renderList(){
-      const q = (search.value||'').toLowerCase();
-      const listData = articles.filter(a => !q || `${a.title} ${a.slug} ${(a.tags||[]).join(' ')}`.toLowerCase().includes(q));
-      list.innerHTML = '';
-      listData.forEach(a => {
-        const li = document.createElement('li');
-        li.className = 'border border-slate-200 rounded-xl p-3 hover:border-ocean-400 cursor-pointer';
-        li.innerHTML = `
-          <div class='flex items-center justify-between gap-2'>
-            <div>
-              <div class='font-medium'>${a.title}</div>
-              <div class='text-xs text-slate-600'>/${a.slug}</div>
-            </div>
-            <div class='text-xs text-slate-600'>${a.category||''}</div>
-          </div>`;
-        li.onclick = ()=> syncToForm(a);
-        list.appendChild(li);
-      });
     }
 
-    function showToast(msg){
-      const t = document.getElementById('toast');
-      t.firstElementChild.textContent = msg;
-      t.classList.remove('hidden');
-      setTimeout(()=> t.classList.add('hidden'), 1600);
-    }
+    $('editor').addEventListener('submit', (e)=>{ e.preventDefault(); saveArticle(); });
+    $('newBtn').addEventListener('click', ()=>{ slugEl.dataset.touched=''; syncToForm({ slug:'', title:'', excerpt:'', category:'Maintenance', minutes:6, tags:[], body:'' }); });
+    $('refreshBtn').addEventListener('click', ()=> loadArticles());
+    $('search').addEventListener('input', ()=> renderList());
 
-    // boot
-    syncToForm(current);
-    loadArticles();
-    })();
+    async function loadArticles(){ const { data, error } = await supabase.from('articles').select('*').order('published_at',{ascending:false}).limit(200); if(error){ console.error(error); return; } articles = data||[]; renderList(); }
+    function renderList(){ const q=(search.value||'').toLowerCase(); const items = articles.filter(a => !q || `${a.title} ${a.slug} ${(a.tags||[]).join(' ')}`.toLowerCase().includes(q)); list.innerHTML=''; items.forEach(a=>{ const li=document.createElement('li'); li.className='border border-slate-200 rounded-xl p-3 hover:border-ocean-400 cursor-pointer'; li.innerHTML=`<div class='flex items-center justify-between gap-2'><div><div class='font-medium'>${a.title}</div><div class='text-xs text-slate-600'>/${a.slug}</div></div><div class='text-xs text-slate-600'>${a.category||''}</div></div>`; li.onclick=()=>{ slugEl.dataset.touched='1'; syncToForm(a); }; list.appendChild(li); }); }
+
+    // Boot
+    (async function boot(){ await initSupabase(); await renderAuth(); syncToForm(current); await loadArticles(); updatePreview(); })();
   </script>
 </body>
 </html>
