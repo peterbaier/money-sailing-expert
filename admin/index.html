@@ -140,11 +140,24 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/env.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ======= CONFIG =======
-    const supabase = window.supabase.createClient(window._env_.SUPABASE_URL, window._env_.SUPABASE_ANON_KEY);
+     async function initSupabase() {
+    // Fetch safe public config from Netlify Function
+    const res = await fetch('/.netlify/functions/public-config', { cache: 'no-store' });
+    if (!res.ok) { console.error('Failed to load public config'); return null; }
+    const { SUPABASE_URL, SUPABASE_ANON_KEY } = await res.json();
+    return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+
+  (async () => {
+    const supabase = await initSupabase();
+    if (!supabase) return;
+
+    // ... your existing auth + article code here ...
+    // e.g., supabase.auth.getUser(), signInWithOtp, fetch articles, etc.
+  
 
     const categories = ["Maintenance","Painting","Fibreglass","Budget","Safety","DIY"];
 
@@ -324,6 +337,7 @@
     // boot
     syncToForm(current);
     loadArticles();
+    })();
   </script>
 </body>
 </html>
