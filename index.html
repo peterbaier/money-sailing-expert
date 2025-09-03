@@ -385,8 +385,8 @@
 <script>
   // If you already put these in Netlify env vars, you can inline them at build time.
   const supabase = window.supabase.createClient(
-    SUPABASE_URL, 
-    SUPABASE_ANON_KEY
+    window._env_?.SUPABASE_URL, 
+    window._env_?.SUPABASE_ANON_KEY
   );
 
   // Login with magic link (attach this to a button in your header)
