@@ -143,7 +143,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ======= CONFIG =======
-    const supabase = window.supabase.createClient("https://obotaqpnnfgmzgkdvmtu.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ib3RhcXBubmZnbXpna2R2bXR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4OTQ1MDMsImV4cCI6MjA3MjQ3MDUwM30.fkpB_AS-nCraXjDp5f6a-VBjYTb71dYWKdi8odLIvLE");
+    const supabase = window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_ANON_KEY);
 
     const categories = ["Maintenance","Painting","Fibreglass","Budget","Safety","DIY"];
 
