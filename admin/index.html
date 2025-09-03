@@ -1,50 +1,330 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"><title>Admin – Articles</title></head>
-<body>
-  <h1>Create / Update Article</h1>
-  <form id="f">
-    <input name="slug" placeholder="slug" required><br>
-    <input name="title" placeholder="title" required><br>
-    <input name="excerpt" placeholder="excerpt"><br>
-    <input name="category" placeholder="category"><br>
-    <input name="tags" placeholder="tags comma-separated"><br>
-    <input name="minutes" type="number" placeholder="minutes" value="6"><br>
-    <textarea name="body" placeholder="Markdown body"></textarea><br>
-    <button>Save</button>
-  </form>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sailing Savers · Admin</title>
+  <meta name="description" content="Create and edit articles with a polished UI matching the main site." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⛵️</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { ocean:{50:'#eef8ff',100:'#d8f0ff',200:'#b9e3ff',300:'#8dd0ff',400:'#56b5ff',500:'#2996f5',600:'#1976d2',700:'#155fa9',800:'#124f8b',900:'#0f406f'}, kelp:{500:'#1d7a59'} } } } }
+  </script>
+  <style>
+    .card { transition: transform .2s ease, box-shadow .2s ease; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,.08); }
+    .input { @apply w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500; }
+    .pill { @apply inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans min-h-screen">
+  <!-- Header -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-white/80 border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
+      <a href="/" class="flex items-center gap-2 font-semibold text-ocean-800">
+        <span class="text-2xl">⛵️</span>
+        <span class="text-lg tracking-tight">Sailing Savers — Admin</span>
+      </a>
+      <div class="ml-auto flex items-center gap-2">
+        <span id="status" class="text-sm text-slate-600 hidden">Checking auth…</span>
+        <button id="loginBtn" class="rounded-full px-3 py-1.5 bg-ocean-600 text-white hover:bg-ocean-700">Login / Sign up</button>
+      </div>
+    </div>
+  </header>
 
+  <!-- Main -->
+  <main class="max-w-6xl mx-auto px-4 py-8 grid lg:grid-cols-3 gap-6">
+    <!-- Editor -->
+    <section class="lg:col-span-2">
+      <div class="card bg-white border border-slate-200 rounded-2xl p-6">
+        <h1 class="text-2xl font-bold">Write article</h1>
+        <p class="text-slate-600 text-sm mt-1">Create or update an article. Drafts are saved as regular rows — control visibility in your frontend.</p>
+
+        <form id="editor" class="mt-6 space-y-5">
+          <div class="grid md:grid-cols-2 gap-4">
+            <label class="block">
+              <span class="text-sm font-medium text-slate-700">Title</span>
+              <input id="title" class="input mt-1" placeholder="Budget Antifouling: Save 40%…" required />
+            </label>
+            <label class="block">
+              <span class="text-sm font-medium text-slate-700">Slug</span>
+              <input id="slug" class="input mt-1 font-mono" placeholder="budget-antifouling" required />
+              <p class="text-xs text-slate-500 mt-1">Auto-generated from title — you can edit.</p>
+            </label>
+          </div>
+
+          <label class="block">
+            <span class="text-sm font-medium text-slate-700">Excerpt</span>
+            <textarea id="excerpt" class="input mt-1" rows="2" placeholder="Short teaser shown in lists"></textarea>
+          </label>
+
+          <div class="grid md:grid-cols-3 gap-4">
+            <label class="block">
+              <span class="text-sm font-medium text-slate-700">Category</span>
+              <select id="category" class="input mt-1">
+                <option>Maintenance</option>
+                <option>Painting</option>
+                <option>Fibreglass</option>
+                <option>Budget</option>
+                <option>Safety</option>
+                <option>DIY</option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="text-sm font-medium text-slate-700">Read time (min)</span>
+              <input id="minutes" type="number" min="1" value="6" class="input mt-1" />
+            </label>
+            <label class="block">
+              <span class="text-sm font-medium text-slate-700">Tags</span>
+              <input id="tagsInput" class="input mt-1" placeholder="antifouling, paint, money" />
+              <div id="tags" class="mt-2 flex flex-wrap gap-2"></div>
+            </label>
+          </div>
+
+          <label class="block">
+            <span class="text-sm font-medium text-slate-700">Body (Markdown)</span>
+            <textarea id="body" class="input mt-1 font-mono" rows="12" placeholder="## Heading\nYour content here…"></textarea>
+          </label>
+
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <button id="saveBtn" type="submit" class="rounded-xl px-5 py-3 bg-kelp-500 text-white hover:brightness-95">Save</button>
+              <button id="resetBtn" type="button" class="rounded-xl px-5 py-3 border border-slate-300 hover:bg-slate-50">Reset</button>
+            </div>
+            <div class="text-sm text-slate-500" id="saveStatus"></div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Live Preview -->
+      <div class="mt-6 card bg-white border border-slate-200 rounded-2xl p-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold">Preview</h2>
+          <label class="text-sm text-slate-600"><input id="autoPreview" type="checkbox" class="mr-2" checked /> Auto-update</label>
+        </div>
+        <article id="preview" class="prose max-w-none mt-4">
+          <h3 class="text-2xl font-semibold" id="pTitle">—</h3>
+          <p class="text-slate-600" id="pExcerpt">—</p>
+          <div class="mt-2 flex items-center gap-2 text-xs text-slate-600"><span id="pCategory" class="pill">Category</span><span id="pTags" class="flex flex-wrap gap-2"></span><span id="pMinutes" class="pill">⏱️ 0 min</span></div>
+          <hr class="my-4" />
+          <pre id="pBody" class="whitespace-pre-wrap"></pre>
+        </article>
+      </div>
+    </section>
+
+    <!-- Sidebar: Existing articles -->
+    <aside>
+      <div class="card bg-white border border-slate-200 rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-xl font-bold">Articles</h2>
+          <button id="refreshBtn" class="rounded-lg px-3 py-1.5 border border-slate-300 hover:bg-slate-50">Refresh</button>
+        </div>
+        <input id="search" class="input" placeholder="Search by title, slug, tag…" />
+        <ul id="list" class="mt-4 space-y-2 max-h-[60vh] overflow-auto"></ul>
+      </div>
+
+      <div class="mt-6 card bg-white border border-slate-200 rounded-2xl p-4 text-xs text-slate-600">
+        <p><strong>Tips</strong></p>
+        <ul class="list-disc list-inside mt-1 space-y-1">
+          <li>Title → Slug auto-fills; edit if needed.</li>
+          <li>Tags: comma-separated. Click tags to remove.</li>
+          <li>Only admins can save (checked via server function).</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 hidden">
+    <div class="rounded-xl bg-ocean-900 text-white px-4 py-2 shadow-lg">Saved!</div>
+  </div>
+
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const supabase = window.supabase.createClient("REPLACE_WITH_SUPABASE_URL","REPLACE_WITH_ANON_KEY");
+    // ======= CONFIG =======
+    const SUPABASE_URL = "REPLACE_WITH_SUPABASE_URL";     // e.g. https://abcd.supabase.co
+    const SUPABASE_ANON = "REPLACE_WITH_ANON_KEY";        // anon public key
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-    document.getElementById('f').onsubmit = async (e) => {
+    const categories = ["Maintenance","Painting","Fibreglass","Budget","Safety","DIY"];
+
+    // ======= AUTH =======
+    const loginBtn = document.getElementById('loginBtn');
+    const statusEl = document.getElementById('status');
+
+    async function login() {
+      const email = prompt('Enter your email for a magic link:');
+      if (!email) return;
+      const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
+      if (error) alert(error.message); else alert('Check your inbox for the login link.');
+    }
+    async function logout() { await supabase.auth.signOut(); location.reload(); }
+
+    supabase.auth.onAuthStateChange((_evt, _session)=>renderAuth());
+    renderAuth();
+
+    async function renderAuth(){
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        loginBtn.textContent = `Logout (${user.email})`;
+        loginBtn.onclick = logout;
+        statusEl.classList.remove('hidden');
+        statusEl.textContent = 'Logged in';
+      } else {
+        loginBtn.textContent = 'Login / Sign up';
+        loginBtn.onclick = login;
+        statusEl.classList.add('hidden');
+      }
+    }
+
+    // ======= EDITOR LOGIC =======
+    const el = (id)=>document.getElementById(id);
+    const title = el('title');
+    const slug = el('slug');
+    const excerpt = el('excerpt');
+    const category = el('category');
+    const minutes = el('minutes');
+    const tagsInput = el('tagsInput');
+    const tagsWrap = el('tags');
+    const body = el('body');
+    const saveBtn = el('saveBtn');
+    const saveStatus = el('saveStatus');
+
+    function toSlug(s){
+      return s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-');
+    }
+
+    title.addEventListener('input', ()=>{ if(!slug.dataset.touched){ slug.value = toSlug(title.value); } updatePreview(); });
+    slug.addEventListener('input', ()=>{ slug.dataset.touched = '1'; });
+
+    // Tags handling
+    function renderTags(list){
+      tagsWrap.innerHTML = '';
+      list.forEach((t,i)=>{
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'pill'; b.textContent = t;
+        b.onclick = ()=>{ current.tags.splice(i,1); renderTags(current.tags); updatePreview(); };
+        tagsWrap.appendChild(b);
+      })
+    }
+    tagsInput.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' || e.key===','){
+        e.preventDefault();
+        const v = tagsInput.value.trim().replace(/,$/,'');
+        if(v && !current.tags.includes(v)) current.tags.push(v);
+        tagsInput.value=''; renderTags(current.tags); updatePreview();
+      }
+    });
+
+    // Preview
+    const autoPreview = el('autoPreview');
+    const pTitle = el('pTitle');
+    const pExcerpt = el('pExcerpt');
+    const pCategory = el('pCategory');
+    const pTags = el('pTags');
+    const pMinutes = el('pMinutes');
+    const pBody = el('pBody');
+
+    function updatePreview(){
+      if(!autoPreview.checked) return;
+      pTitle.textContent = title.value || '—';
+      pExcerpt.textContent = excerpt.value || '—';
+      pCategory.textContent = category.value || '—';
+      pTags.innerHTML = (current.tags||[]).map(t=>`<span class='pill'>${t}</span>`).join(' ');
+      pMinutes.textContent = `⏱️ ${Number(minutes.value||0)} min`;
+      pBody.textContent = body.value || '';
+    }
+
+    // Current article state
+    let current = { slug:'', title:'', excerpt:'', category:categories[0], minutes:6, tags:[], body:'' };
+
+    function syncToForm(a){
+      current = { ...current, ...a };
+      title.value = a.title||'';
+      slug.value = a.slug||'';
+      excerpt.value = a.excerpt||'';
+      category.value = a.category || categories[0];
+      minutes.value = a.minutes || 6;
+      body.value = a.body || '';
+      renderTags(a.tags||[]);
+      updatePreview();
+    }
+
+    el('resetBtn').onclick = ()=>{ syncToForm({ slug:'', title:'', excerpt:'', category:categories[0], minutes:6, tags:[], body:'' }); };
+
+    // Save (calls Netlify Function)
+    el('editor').addEventListener('submit', async (e)=>{
       e.preventDefault();
-      const form = new FormData(e.target);
-      const article = {
-        slug: form.get('slug'),
-        title: form.get('title'),
-        excerpt: form.get('excerpt'),
-        body: form.get('body'),
-        category: form.get('category'),
-        tags: form.get('tags') ? form.get('tags').split(',').map(s=>s.trim()) : [],
-        minutes: Number(form.get('minutes')||6)
-      };
+      saveBtn.disabled = true; saveStatus.textContent = 'Saving…';
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return alert('Please log in on the main site first (magic link).');
+      if (!session) { saveBtn.disabled=false; saveStatus.textContent=''; return alert('Please log in first.'); }
+
+      const payload = {
+        slug: slug.value.trim(),
+        title: title.value.trim(),
+        excerpt: excerpt.value.trim(),
+        body: body.value,
+        category: category.value,
+        tags: current.tags,
+        minutes: Number(minutes.value||6)
+      };
 
       const res = await fetch('/.netlify/functions/upsert-article', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify(article)
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+        body: JSON.stringify(payload)
       });
-      const text = await res.text();
-      if (!res.ok) return alert(text);
-      alert('Saved!');
-    };
+      const txt = await res.text();
+      saveBtn.disabled = false; saveStatus.textContent = '';
+      if(!res.ok) return alert(txt);
+      showToast('Saved');
+      await loadArticles();
+    });
+
+    // ======= LIST & EDIT =======
+    const list = el('list');
+    const search = el('search');
+    el('refreshBtn').onclick = ()=>loadArticles();
+    search.addEventListener('input', ()=>renderList());
+
+    let articles = [];
+    async function loadArticles(){
+      const { data, error } = await supabase.from('articles').select('*').order('published_at', { ascending:false }).limit(200);
+      if (error) { console.error(error); return; }
+      articles = data || [];
+      renderList();
+    }
+    function renderList(){
+      const q = (search.value||'').toLowerCase();
+      const listData = articles.filter(a => !q || `${a.title} ${a.slug} ${(a.tags||[]).join(' ')}`.toLowerCase().includes(q));
+      list.innerHTML = '';
+      listData.forEach(a => {
+        const li = document.createElement('li');
+        li.className = 'border border-slate-200 rounded-xl p-3 hover:border-ocean-400 cursor-pointer';
+        li.innerHTML = `
+          <div class='flex items-center justify-between gap-2'>
+            <div>
+              <div class='font-medium'>${a.title}</div>
+              <div class='text-xs text-slate-600'>/${a.slug}</div>
+            </div>
+            <div class='text-xs text-slate-600'>${a.category||''}</div>
+          </div>`;
+        li.onclick = ()=> syncToForm(a);
+        list.appendChild(li);
+      });
+    }
+
+    function showToast(msg){
+      const t = document.getElementById('toast');
+      t.firstElementChild.textContent = msg;
+      t.classList.remove('hidden');
+      setTimeout(()=> t.classList.add('hidden'), 1600);
+    }
+
+    // boot
+    syncToForm(current);
+    loadArticles();
   </script>
 </body>
 </html>
