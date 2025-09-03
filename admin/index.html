@@ -1,15 +1,50 @@
 <!doctype html>
 <html>
-  <head><meta charset="utf-8"><title>Content Manager</title></head>
-  <body>
-    <script src="https://unpkg.com/netlify-identity-widget@1.9.1/build/netlify-identity-widget.js"></script>
-    <script>
-      if (window.netlifyIdentity) {
-        window.netlifyIdentity.on("init", user => {
-          if (!user) window.netlifyIdentity.on("login", () => document.location.reload());
-        });
-      }
-    </script>
-    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
-  </body>
+<head><meta charset="utf-8"><title>Admin – Articles</title></head>
+<body>
+  <h1>Create / Update Article</h1>
+  <form id="f">
+    <input name="slug" placeholder="slug" required><br>
+    <input name="title" placeholder="title" required><br>
+    <input name="excerpt" placeholder="excerpt"><br>
+    <input name="category" placeholder="category"><br>
+    <input name="tags" placeholder="tags comma-separated"><br>
+    <input name="minutes" type="number" placeholder="minutes" value="6"><br>
+    <textarea name="body" placeholder="Markdown body"></textarea><br>
+    <button>Save</button>
+  </form>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabase = window.supabase.createClient("REPLACE_WITH_SUPABASE_URL","REPLACE_WITH_ANON_KEY");
+
+    document.getElementById('f').onsubmit = async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const article = {
+        slug: form.get('slug'),
+        title: form.get('title'),
+        excerpt: form.get('excerpt'),
+        body: form.get('body'),
+        category: form.get('category'),
+        tags: form.get('tags') ? form.get('tags').split(',').map(s=>s.trim()) : [],
+        minutes: Number(form.get('minutes')||6)
+      };
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return alert('Please log in on the main site first (magic link).');
+
+      const res = await fetch('/.netlify/functions/upsert-article', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(article)
+      });
+      const text = await res.text();
+      if (!res.ok) return alert(text);
+      alert('Saved!');
+    };
+  </script>
+</body>
 </html>
