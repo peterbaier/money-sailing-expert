@@ -1,5 +1,6 @@
 [build]
   publish = "."   # your site root (where index.html lives)
+  command = "echo \"window._env_={SUPABASE_URL:'$SUPABASE_URL',SUPABASE_ANON_KEY:'$SUPABASE_ANON_KEY'}\" > env.js"
   # If you adopt a generator later (e.g., Eleventy/Astro), set your build command here.
 
 [functions]
