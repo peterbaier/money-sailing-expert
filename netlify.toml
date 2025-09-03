@@ -2,7 +2,6 @@
   publish = "."   # your site root (where index.html lives)
   # If you adopt a generator later (e.g., Eleventy/Astro), set your build command here.
 
-[[redirects]]
-  from = "/admin"
-  to = "/admin/index.html"
-  status = 200
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
