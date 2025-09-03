@@ -140,10 +140,11 @@
   </div>
 
   <!-- Scripts -->
+  <script src="/env.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ======= CONFIG =======
-    const supabase = window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_ANON_KEY);
+    const supabase = window.supabase.createClient(window._env_.SUPABASE_URL, window._env_.SUPABASE_ANON_KEY);
 
     const categories = ["Maintenance","Painting","Fibreglass","Budget","Safety","DIY"];
 
