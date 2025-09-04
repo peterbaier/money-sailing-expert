@@ -44,7 +44,7 @@
         <a class="hover:text-ocean-700" href="#articles">Articles</a>
         <a class="hover:text-ocean-700" href="#categories">Categories</a>
         <a class="hover:text-ocean-700" href="#newsletter">Newsletter</a>
-        <button id="signinBtn" class="rounded-full px-3 py-1.5 bg-ocean-600 text-white hover:bg-ocean-700">Sign in (coming soon)</button>
+        <button id="authBtn" class="rounded-full px-3 py-1.5 bg-ocean-600 text-white hover:bg-ocean-700">Login / Sign up</button>
       </nav>
       <button class="md:hidden ml-auto" id="menuBtn" aria-label="Open menu">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-700"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -56,7 +56,7 @@
         <a class="py-1" href="#articles">Articles</a>
         <a class="py-1" href="#categories">Categories</a>
         <a class="py-1" href="#newsletter">Newsletter</a>
-        <button id="signinBtnMobile" class="mt-2 rounded-lg px-3 py-2 bg-ocean-600 text-white">Sign in (coming soon)</button>
+        <button id="authBtnMobile" class="mt-2 rounded-lg px-3 py-2 bg-ocean-600 text-white">Login / Sign up</button>
       </div>
     </div>
   </header>
@@ -198,102 +198,19 @@
     <div class="max-w-6xl mx-auto px-4 mt-8 text-xs text-slate-500">© <span id="year"></span> Sailing Savers</div>
   </footer>
 
-  <!-- Sign-in placeholder modal -->
-  <div id="modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
-      <div class="flex items-start justify-between">
-        <h3 class="text-lg font-bold">Accounts coming soon</h3>
-        <button id="closeModal" aria-label="Close" class="p-1">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-      <p class="mt-3 text-slate-700">We’re building sign-in for bookmarks, comments, and member perks. For a future-ready path, deploy on Netlify and enable <a href="https://docs.netlify.com/visitor-access/identity/" class="text-ocean-700 underline" target="_blank" rel="noreferrer">Netlify Identity</a>. For now, everything is free to browse 💙</p>
-      <div class="mt-4 text-right">
-        <button id="closeModal2" class="rounded-xl px-4 py-2 bg-ocean-600 text-white hover:bg-ocean-700">Got it</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Data + Render script (simple client-side search / filter) -->
+  <!-- Scripts: Supabase + Page logic -->
   <script>
+    // Globals
     const categories = ["Maintenance","Painting","Fibreglass","Budget","Safety","DIY"];
+    let supabase;        // Supabase client after init
+    let articles = [];   // Filled from DB
 
-    const articles = [
-      {
-        id: 'a1',
-        title: 'Budget Antifouling: Save 40% Without Losing Performance',
-        excerpt: 'How to choose value paints, prep efficiently, and stretch each tin further with smart coverage tactics.',
-        category: 'Painting',
-        tags: ['antifouling','paint','cost-saving'],
-        minutes: 6
-      },
-      {
-        id: 'a2',
-        title: 'Fibreglass Repair 101: From Hairline Cracks to Hull Dings',
-        excerpt: 'The no-drama approach to laminating, fairing, and finishing — gear you need and what you can skip.',
-        category: 'Fibreglass',
-        tags: ['repair','laminate','gelcoat'],
-        minutes: 8
-      },
-      {
-        id: 'a3',
-        title: 'Winterizing on a Shoestring',
-        excerpt: 'Avoid spring surprises with a minimalist checklist — fuel, water, batteries, sails, and covers.',
-        category: 'Maintenance',
-        tags: ['winter','checklist','storage'],
-        minutes: 5
-      },
-      {
-        id: 'a4',
-        title: 'DIY Gelcoat Touch-ups That Actually Blend',
-        excerpt: 'Colour matching, microballoons, and the secret to a glossy final polish — without pro prices.',
-        category: 'Painting',
-        tags: ['gelcoat','finish','polish'],
-        minutes: 7
-      },
-      {
-        id: 'a5',
-        title: 'Rigging on a Budget: Smart Replacements & When to Wait',
-        excerpt: 'Prioritize safety-critical items, group labour, and source hardware cleverly to halve the bill.',
-        category: 'Budget',
-        tags: ['rigging','hardware','sourcing'],
-        minutes: 6
-      },
-      {
-        id: 'a6',
-        title: 'Safety Gear: What to Buy Used (and What Never to)',
-        excerpt: 'PFDs, flares, EPIRBs, and harnesses — understand lifespans and where savings are false economy.',
-        category: 'Safety',
-        tags: ['PFD','EPIRB','flares'],
-        minutes: 5
-      },
-      {
-        id: 'a7',
-        title: 'Simple Deck Paint That Lasts',
-        excerpt: 'Non-skid recipes, surface prep shortcuts, and avoiding UV chalking for a clean, durable finish.',
-        category: 'Painting',
-        tags: ['deck','non-skid','UV'],
-        minutes: 4
-      },
-      {
-        id: 'a8',
-        title: 'Core Skills: Small-Scale Fibreglass Layups',
-        excerpt: 'Cloths vs. mats, orienting fibres, and getting the right resin ratio without fancy scales.',
-        category: 'Fibreglass',
-        tags: ['cloth','mat','resin'],
-        minutes: 9
-      },
-      {
-        id: 'a9',
-        title: 'Preventive Maintenance That Actually Saves Money',
-        excerpt: 'A quarterly checklist that cuts emergency call-outs and extends engine and gear life.',
-        category: 'Maintenance',
-        tags: ['engine','checklist','service'],
-        minutes: 6
-      },
-    ];
+    // Mobile menu toggle
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    menuBtn.addEventListener('click', ()=> mobileMenu.classList.toggle('hidden'));
 
-    // Render filters
+    // Filters UI
     const filtersEl = document.getElementById('filters');
     const selected = new Set();
     categories.forEach(cat => {
@@ -310,41 +227,23 @@
       filtersEl.appendChild(b);
     });
 
-    // Category tiles as filters
+    // Category tiles act as filters
     document.querySelectorAll('.category-tile').forEach(tile => {
       tile.addEventListener('click', () => {
         const cat = tile.getAttribute('data-filter');
-        // toggle in selected
         if (selected.has(cat)) selected.delete(cat); else selected.add(cat);
         render();
-        // scroll to grid
         document.getElementById('articles').scrollIntoView({ behavior: 'smooth' });
       });
     });
 
     // Search
     const qEl = document.getElementById('q');
-    qEl.addEventListener('input', () => render());
+    qEl.addEventListener('input', render);
 
+    // Grid & count
     const grid = document.getElementById('grid');
     const count = document.getElementById('count');
-
-    function render() {
-      const q = qEl.value.trim().toLowerCase();
-      let list = articles.filter(a => {
-        const inCat = selected.size ? selected.has(a.category) : true;
-        const inSearch = !q || (
-          a.title.toLowerCase().includes(q) ||
-          a.excerpt.toLowerCase().includes(q) ||
-          a.tags.join(' ').toLowerCase().includes(q) ||
-          a.category.toLowerCase().includes(q)
-        );
-        return inCat && inSearch;
-      });
-      grid.innerHTML = '';
-      list.forEach(a => grid.appendChild(articleCard(a)));
-      count.textContent = `${list.length} article${list.length===1?'':'s'} shown`;
-    }
 
     function articleCard(a) {
       const el = document.createElement('article');
@@ -352,97 +251,90 @@
       el.innerHTML = `
         <div class="relative">
           <div class="h-36 bg-gradient-to-br from-ocean-200 to-ocean-400"></div>
-          <span class="absolute top-2 left-2 text-xs bg-white/90 rounded-full px-2 py-1 border border-white/70">${a.category}</span>
+          <span class="absolute top-2 left-2 text-xs bg-white/90 rounded-full px-2 py-1 border border-white/70">${a.category||''}</span>
         </div>
         <div class="p-4 flex-1 flex flex-col">
-          <h3 class="font-semibold text-slate-900">${a.title}</h3>
-          <p class="mt-2 text-slate-700 text-sm flex-1">${a.excerpt}</p>
+          <h3 class="font-semibold text-slate-900">${a.title||'Untitled'}</h3>
+          <p class="mt-2 text-slate-700 text-sm flex-1">${a.excerpt||''}</p>
           <div class="mt-3 flex items-center justify-between text-xs text-slate-600">
-            <div class="flex gap-1 flex-wrap">${a.tags.map(t=>`<span class='px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200'>${t}</span>`).join('')}</div>
-            <span>⏱️ ${a.minutes} min</span>
+            <div class="flex gap-1 flex-wrap">${(a.tags||[]).map(t=>`<span class='px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200'>${t}</span>`).join('')}</div>
+            <span>⏱️ ${a.minutes||0} min</span>
           </div>
-          <a href="#" class="mt-4 inline-flex items-center gap-2 text-ocean-700 hover:underline">Read guide <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+          <a href="/${a.slug||'#'}" class="mt-4 inline-flex items-center gap-2 text-ocean-700 hover:underline">Read guide <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
         </div>`;
       return el;
     }
 
-    // Modal & menu
-    const modal = document.getElementById('modal');
-    document.getElementById('signinBtn').addEventListener('click', ()=> modal.classList.remove('hidden'));
-    document.getElementById('signinBtnMobile').addEventListener('click', ()=> modal.classList.remove('hidden'));
-    document.getElementById('closeModal').addEventListener('click', ()=> modal.classList.add('hidden'));
-    document.getElementById('closeModal2').addEventListener('click', ()=> modal.classList.add('hidden'));
-    const menuBtn = document.getElementById('menuBtn');
-    const mobileMenu = document.getElementById('mobileMenu');
-    menuBtn.addEventListener('click', ()=> mobileMenu.classList.toggle('hidden'));
-
-    // Footer year, initial render
-    document.getElementById('year').textContent = new Date().getFullYear();
-    render();
-  </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  // If you already put these in Netlify env vars, you can inline them at build time.
-  const supabase = window.supabase.createClient(
-    window._env_?.SUPABASE_URL, 
-    window._env_?.SUPABASE_ANON_KEY
-  );
-
-  // Login with magic link (attach this to a button in your header)
-  async function login() {
-    const email = prompt("Enter your email for a magic link:");
-    if (!email) return;
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.origin }
-    });
-    if (error) alert(error.message); else alert("Check your email for the login link.");
-  }
-
-  async function logout() { await supabase.auth.signOut(); location.reload(); }
-
-  // OPTIONAL: add a button in the header dynamically
-  (function mountAuthButton(){
-    const btn = document.createElement('button');
-    btn.className = 'rounded-full px-3 py-1.5 bg-ocean-600 text-white ml-3';
-    document.querySelector('header .max-w-6xl')?.appendChild(btn);
-    supabase.auth.onAuthStateChange(render);
-    render();
-    async function render() {
-      const { data: { user } } = await supabase.auth.getUser();
-      btn.textContent = user ? `Logout (${user.email})` : 'Login / Sign up';
-      btn.onclick = () => user ? logout() : login();
+    function render(){
+      const q = qEl.value.trim().toLowerCase();
+      let list = articles.filter(a => {
+        const inCat = selected.size ? selected.has(a.category) : true;
+        const text = `${a.title||''} ${a.excerpt||''} ${(a.tags||[]).join(' ')} ${a.category||''}`.toLowerCase();
+        const inSearch = !q || text.includes(q);
+        return inCat && inSearch;
+      });
+      grid.innerHTML = '';
+      list.forEach(a => grid.appendChild(articleCard(a)));
+      count.textContent = `${list.length} article${list.length===1?'':'s'} shown`;
     }
-  })();
 
-  // Fetch articles from Supabase
-  async function fetchArticles() {
-    const { data, error } = await supabase
-      .from('articles')
-      .select('*')
-      .order('published_at', { ascending: false })
-      .limit(50);
-    if (error) { console.error(error); return []; }
-    return data;
-  }
+    // ==== Supabase runtime init via Netlify Function (no secrets in build) ====
+    async function initSupabase(){
+      const res = await fetch('/.netlify/functions/public-config', { cache: 'no-store' });
+      if(!res.ok){ console.error('Failed to load config'); return; }
+      const { SUPABASE_URL, SUPABASE_ANON_KEY } = await res.json();
+      const sdk = document.createElement('script');
+      sdk.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+      await new Promise(r=>{ sdk.onload=r; document.body.appendChild(sdk); });
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
 
-  // Replace your hardcoded data source:
-  (async function boot() {
-    const items = await fetchArticles();
-    const grid = document.getElementById('grid');
-    const count = document.getElementById('count');
-    grid.innerHTML = '';
-    items.forEach(a => grid.appendChild(articleCard({
-      id: a.id,
-      title: a.title,
-      excerpt: a.excerpt || '',
-      category: a.category || '',
-      tags: a.tags || [],
-      minutes: a.minutes || 5
-    })));
-    count.textContent = `${items.length} article${items.length===1?'':'s'} shown`;
-  })();
-</script>
+    // Auth button (desktop + mobile)
+    async function renderAuthBtn(){
+      const btns = [document.getElementById('authBtn'), document.getElementById('authBtnMobile')].filter(Boolean);
+      const { data: { user } } = await supabase.auth.getUser();
+      btns.forEach(btn => {
+        if (!btn) return;
+        if (user) {
+          btn.textContent = `Logout (${user.email})`;
+          btn.onclick = async () => { await supabase.auth.signOut(); renderAuthBtn(); };
+        } else {
+          btn.textContent = 'Login / Sign up';
+          btn.onclick = async () => {
+            const email = prompt('Enter your email for a magic link:');
+            if (!email) return;
+            const { error } = await supabase.auth.signInWithOtp({
+              email,
+              options: { emailRedirectTo: window.location.origin }
+            });
+            if (error) alert(error.message); else alert('Check your inbox for the login link.');
+          };
+        }
+      });
+    }
+
+    // Fetch published articles from Supabase
+    async function fetchArticles(){
+      const { data, error } = await supabase
+        .from('articles')
+        .select('id, title, slug, excerpt, category, minutes, tags, published_at')
+        .not('published_at','is',null)
+        .lte('published_at', new Date().toISOString())
+        .order('published_at', { ascending: false })
+        .limit(50);
+      if (error) { console.error(error); return []; }
+      return data || [];
+    }
+
+    // Boot
+    (async function boot(){
+      document.getElementById('year').textContent = new Date().getFullYear();
+      await initSupabase();
+      supabase.auth.onAuthStateChange(() => renderAuthBtn());
+      await renderAuthBtn();
+      articles = await fetchArticles();
+      render();
+    })();
+  </script>
 </body>
 </html>
