@@ -165,31 +165,49 @@ const categories = ["Maintenance","Painting","Fibreglass","Budget","Safety","DIY
 
     // ======= AUTH =======
     const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
     const statusEl = document.getElementById('status');
 
     async function login() {
-      const email = prompt('Enter your email for a magic link:');
+      const email = prompt('Enter your email to log in (magic link):');
       if (!email) return;
-      const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
-      if (error) alert(error.message); else alert('Check your inbox for the login link.');
-    }
-    async function logout() { await supabase.auth.signOut(); location.reload(); }
+      const { error } = await supabase.auth.signInWithOtp({
+      email, options: { emailRedirectTo: window.location.origin }
+    });
 
-    // auth listeners are attached after initSupabase() in the boot() function below
+    if (error) alert(error.message);
+    else alert('Check your inbox to finish logging in.');
+  }
 
-    async function renderAuth(){
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        loginBtn.textContent = `Logout (${user.email})`;
-        loginBtn.onclick = logout;
-        statusEl.classList.remove('hidden');
-        statusEl.textContent = 'Logged in';
-      } else {
-        loginBtn.textContent = 'Login / Sign up';
-        loginBtn.onclick = login;
-        statusEl.classList.add('hidden');
-      }
-    }
+async function signup() {
+  const email = prompt('Enter your email to sign up (confirm via email):');
+  if (!email) return;
+  const { error } = await supabase.auth.signUp({
+    email, options: { emailRedirectTo: window.location.origin }
+  });
+  if (error) alert(error.message);
+  else alert('Check your inbox to confirm your account.');
+}
+
+async function logout() {
+  await supabase.auth.signOut();
+  renderAuth();
+}
+
+async function renderAuth(){
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    loginBtn.textContent = `Logout (${user.email})`;
+    loginBtn.onclick = logout;
+    signupBtn.style.display = 'none';
+    statusEl.textContent = 'Logged in';
+  } else {
+    loginBtn.textContent = 'Log in';
+    loginBtn.onclick = login;
+    signupBtn.style.display = '';
+    signupBtn.onclick = signup;
+    statusEl.textContent = '';
+  }
 
     // ======= EDITOR LOGIC =======
     const el = (id)=>document.getElementById(id);
