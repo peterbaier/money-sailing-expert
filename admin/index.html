@@ -144,12 +144,22 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // ======= CONFIG =======
-    const SUPABASE_URL = "REPLACE_WITH_SUPABASE_URL";
-    const SUPABASE_ANON = "REPLACE_WITH_ANON_KEY";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    // ======= CONFIG (runtime via Netlify function) =======
+let supabase; // will be assigned in initSupabase()
+async function initSupabase(){
+  try {
+    const res = await fetch('/.netlify/functions/public-config', { cache: 'no-store' });
+    if(!res.ok) throw new Error('Failed to fetch public config');
+    const { SUPABASE_URL, SUPABASE_ANON_KEY } = await res.json();
+    // SDK is loaded via the script tag above
+    if (!window.supabase) throw new Error('Supabase SDK not loaded');
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch (e) {
+    console.error(e); alert('Could not initialise Supabase on this page.');
+  }
+}
 
-    const categories = ["Maintenance","Painting","Fibreglass","Budget","Safety","DIY"];
+const categories = ["Maintenance","Painting","Fibreglass","Budget","Safety","DIY"];
 
     // ======= AUTH =======
     const loginBtn = document.getElementById('loginBtn');
@@ -163,8 +173,7 @@
     }
     async function logout() { await supabase.auth.signOut(); location.reload(); }
 
-    supabase.auth.onAuthStateChange((_evt, _session)=>renderAuth());
-    renderAuth();
+    // auth listeners are attached after initSupabase() in the boot() function below
 
     async function renderAuth(){
       const { data: { user } } = await supabase.auth.getUser();
