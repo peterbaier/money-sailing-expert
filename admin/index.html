@@ -111,7 +111,7 @@
             <span id="pMinutes" class="pill">⏱️ 0 min</span>
           </div>
           <hr class="my-4" />
-          <pre id="pBody" class="whitespace-pre-wrap"></pre>
+          <pre id="pBody" class="prose"></pre>
         </article>
       </div>
     </section>
@@ -144,6 +144,7 @@
   </div>
 
   <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ======= CONFIG (runtime via Netlify function) =======
@@ -263,6 +264,7 @@ async function renderAuth(){
       pTags.innerHTML = (current.tags||[]).map(t=>`<span class='pill'>${t}</span>`).join(' ');
       pMinutes.textContent = `⏱️ ${Number(minutes.value||0)} min`;
       pBody.textContent = body.value || '';
+      pBody.innerHTML = marked.parse(body.value || '');
     }
 
     let current = { slug:'', title:'', excerpt:'', category:categories[0], minutes:6, tags:[], body:'' };
