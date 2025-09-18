@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Admin Login · Sailing Savers</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <main class="min-h-screen grid place-items-center p-4">
+    <div class="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+      <h1 class="text-xl font-bold">Admin Login</h1>
+      <p class="text-sm text-slate-600 mt-1">Only approved admins may access the editor.</p>
+
+      <div class="mt-4 space-y-3">
+        <input id="email" type="email" placeholder="you@email"
+               class="w-full rounded-xl border-slate-300 focus:border-blue-600 focus:ring-blue-600"/>
+        <input id="password" type="password" placeholder="Your password"
+               class="w-full rounded-xl border-slate-300 focus:border-blue-600 focus:ring-blue-600"/>
+        <div class="flex gap-2">
+          <button id="loginPw" class="flex-1 rounded-xl px-4 py-2 bg-blue-600 text-white">Log in</button>
+          <button id="magicLink" class="flex-1 rounded-xl px-4 py-2 border border-blue-600 text-blue-700">Magic link</button>
+        </div>
+        <p id="msg" class="text-sm text-red-600 h-5"></p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let supabase;
+    async function init() {
+      const cfg = await fetch('/.netlify/functions/public-config', {cache:'no-store'}).then(r=>r.json());
+      supabase = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+      // If user arrives via magic link, session is already set — just continue.
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) await continueIfAdmin();
+    }
+
+    async function continueIfAdmin(){
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data, error } = await supabase.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
+      if (error) { setMsg(error.message); return; }
+      if (data?.is_admin) {
+        location.assign('/admin'); // your /admin → /admin/index.html redirect remains
+      } else {
+        await supabase.auth.signOut();
+        setMsg('This account is not an admin.');
+      }
+    }
+
+    function setMsg(t){ document.getElementById('msg').textContent = t || ''; }
+
+    document.getElementById('loginPw').onclick = async () => {
+      setMsg('');
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      if (!email || !password) return setMsg('Enter email and password.');
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return setMsg(error.message);
+      await continueIfAdmin();
+    };
+
+    document.getElementById('magicLink').onclick = async () => {
+      setMsg('');
+      const email = document.getElementById('email').value.trim();
+      if (!email) return setMsg('Enter your email.');
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: window.location.origin + '/admin/login.html' }
+      });
+      if (error) return setMsg(error.message);
+      setMsg('Check your inbox for the magic link.');
+    };
+
+    init();
+  </script>
+</body>
+</html>
