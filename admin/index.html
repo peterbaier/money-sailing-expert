@@ -239,8 +239,7 @@ if (autoPreview) autoPreview.addEventListener('change', ()=>{ if (autoPreview.ch
 
     el('resetBtn').onclick = ()=>{ syncToForm({ slug:'', title:'', excerpt:'', category:'Maintenance', minutes:6, tags:[], body:'' }); };
 
-    
-    document.getElementById('editor').addEventListener('submit', async (e) => {
+    el('editor').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     // Basic validation
