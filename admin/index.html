@@ -187,27 +187,43 @@
     });
 
     const autoPreview = el('autoPreview');
-    const pTitle = el('pTitle');
-    const pExcerpt = el('pExcerpt');
-    const pCategory = el('pCategory');
-    const pTags = el('pTags');
-    const pMinutes = el('pMinutes');
-    const pBody = el('pBody');
+const pTitle = el('pTitle');
+const pExcerpt = el('pExcerpt');
+const pCategory = el('pCategory');
+const pTags = el('pTags');
+const pMinutes = el('pMinutes');
+const pBody = el('pBody');
 
-    function updatePreview(){
-      if(!autoPreview.checked) return;
-      pTitle.textContent = title.value || '—';
-      pExcerpt.textContent = excerpt.value || '—';
-      pCategory.textContent = category.value || '—';
-      pTags.innerHTML = (current.tags||[]).map(t=>`<span class='inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs'>${t}</span>`).join(' ');
-      pMinutes.textContent = `⏱️ ${Number(minutes.value||0)} min`;
-      const md = body.value || '';
-      const parse = (window.marked && window.marked.parse) ? window.marked.parse : (s=>s);
-      pBody.innerHTML = parse(md);
-    }</span>`).join(' ');
-      pMinutes.textContent = `⏱️ ${Number(minutes.value||0)} min`;
-      pBody.innerHTML = marked.parse(body.value || '');
+// Ensure preview always renders; the checkbox will simply pause live updates, but manual calls still work.
+function updatePreview(){
+  try {
+    pTitle.textContent = title.value || '—';
+    pExcerpt.textContent = excerpt.value || '—';
+    pCategory.textContent = category.value || '—';
+    pTags.innerHTML = (current.tags||[]).map(t=>`<span class='inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs'>${t}</span>`).join(' ');
+    pMinutes.textContent = `⏱️ ${Number(minutes.value||0)} min`;
+    const md = body.value || '';
+    let parse;
+    if (window.marked) {
+      parse = (typeof window.marked === 'function') ? window.marked : window.marked.parse;
+    } else {
+      parse = (s)=> s; // fallback: raw text
     }
+    pBody.innerHTML = parse(md);
+  } catch(err){
+    console.error('Preview error:', err);
+  }
+}
+
+// Live update wiring
+['input','change'].forEach(evt=>{
+  title.addEventListener(evt, ()=>{ if(!slug.dataset.touched && evt==='input'){ slug.value = toSlug(title.value); } if(autoPreview?.checked !== false) updatePreview(); });
+  excerpt.addEventListener(evt, ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
+  category.addEventListener(evt, ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
+  minutes.addEventListener(evt, ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
+  body.addEventListener(evt, ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
+});
+if (autoPreview) autoPreview.addEventListener('change', ()=>{ if (autoPreview.checked) updatePreview(); });
 
     function syncToForm(a){
       current = { ...current, ...a };
