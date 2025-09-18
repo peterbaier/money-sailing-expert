@@ -188,204 +188,118 @@ Your content here…"></textarea>
   </div>
 
   <script>
-    // ===== Supabase init via Netlify function =====
+    // ======= Supabase init (runtime via Netlify function) =======
     let supabase;
-    async function initSupabase() {
-      const res = await fetch("/.netlify/functions/public-config", {
-        cache: "no-store",
-      });
-      if (!res.ok) {
-        alert("Failed to load config");
-        return;
-      }
-      const {
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY
-      } = await res.json();
-      supabase = window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY
-      );
+    async function initSupabase(){
+      const res = await fetch('/.netlify/functions/public-config', { cache: 'no-store' });
+      if(!res.ok){ alert('Failed to load config'); return; }
+      const { SUPABASE_URL, SUPABASE_ANON_KEY } = await res.json();
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     }
-
-    // ===== Guard: admin only =====
-    async function requireAdmin() {
-      const {
-        data: {
-          user
-        },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        location.assign("/admin/login.html");
-        return false;
-      }
-      const {
-        data,
-        error
-      } = await supabase
-        .from("profiles")
-        .select("is_admin")
-        .eq("id", user.id)
-        .maybeSingle();
-      if (error || !data ? .is_admin) {
-        await supabase.auth.signOut();
-        location.assign("/admin/login.html");
-        return false;
-      }
-      document.getElementById("userEmail").textContent = user.email || "";
+  
+    // ======= Guard: admin only =======
+    async function requireAdmin(){
+      const { data: { user } } = await supabase.auth.getUser();
+      if(!user){ location.assign('/admin/login.html'); return false; }
+      const { data, error } = await supabase.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
+      if(error || !data?.is_admin){ await supabase.auth.signOut(); location.assign('/admin/login.html'); return false; }
+      document.getElementById('userEmail').textContent = user.email || '';
       return true;
     }
-
-    // ===== Sign out =====
-    document.getElementById("signOut").addEventListener("click", async () => {
-      if (!supabase) return location.assign("/admin/login.html");
-      await supabase.auth.signOut();
-      location.assign("/admin/login.html");
-    });
-
-    // ===== Elements =====
-    const el = (id) => document.getElementById(id);
-    const title = el("title");
-    const slug = el("slug");
-    const excerpt = el("excerpt");
-    const category = el("category");
-    const minutes = el("minutes");
-    const tagsInput = el("tagsInput");
-    const tagsWrap = el("tags");
-    const body = el("body");
-    const saveBtn = el("saveBtn");
-    const saveStatus = el("saveStatus");
-
-    // ===== Preview (robust wiring) =====
-    const autoPreview = el("autoPreview");
-    const pTitle = el("pTitle");
-    const pExcerpt = el("pExcerpt");
-    const pCategory = el("pCategory");
-    const pTags = el("pTags");
-    const pMinutes = el("pMinutes");
-    const pBody = el("pBody");
-
-    function renderMD(md) {
-      if (window.marked && typeof window.marked.parse === "function")
-        return window.marked.parse(md || "");
-      return (md || "").replace(
-        /[&<>]/g,
-        (s) => ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;"
-        } [s])
-      );
-    }
-
-    let current = {
-      slug: "",
-      title: "",
-      excerpt: "",
-      category: "Maintenance",
-      minutes: 6,
-      tags: [],
-      body: "",
-    };
-
-    function toSlug(s) {
-      return s
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9\\s-]/g, "")
-        .replace(/\\s+/g, "-")
-        .replace(/-+/g, "-");
-    }
-
-    function updatePreview() {
-      pTitle.textContent = title.value || "—";
-      pExcerpt.textContent = excerpt.value || "—";
-      pCategory.textContent = category.value || "—";
-      pTags.innerHTML = (current.tags || [])
-        .map(
-          (t) =>
-          `<span class=\"inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs\">${t}</span>`
-        )
-        .join(" ");
-      pMinutes.textContent = `⏱️ ${Number(minutes.value || 0)} min`;
-      pBody.innerHTML = renderMD(body.value || "");
-    }
-
-    // slug autofill & tag chips
-    title.addEventListener("input", () => {
-      if (!slug.dataset.touched) {
-        slug.value = toSlug(title.value);
-      }
-    });
-    slug.addEventListener("input", () => {
-      slug.dataset.touched = "1";
-    });
-
-    function renderTags(list) {
-      tagsWrap.innerHTML = "";
-      (list || []).forEach((t, i) => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className =
-          "inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs";
-        b.textContent = t;
-        b.title = "Remove tag";
-        b.onclick = () => {
-          current.tags.splice(i, 1);
-          renderTags(current.tags);
-          updatePreview();
-        };
+  
+    // ======= Auth top-right =======
+    document.getElementById('signOut').onclick = async ()=>{ await supabase.auth.signOut(); location.assign('/admin/login.html'); };
+  
+    // ======= Editor state =======
+    const el = id => document.getElementById(id);
+    const title = el('title');
+    const slug = el('slug');
+    const excerpt = el('excerpt');
+    const category = el('category');
+    const minutes = el('minutes');
+    const tagsInput = el('tagsInput');
+    const tagsWrap = el('tags');
+    const body = el('body');
+    const saveBtn = el('saveBtn');
+    const saveStatus = el('saveStatus');
+  
+    let current = { slug:'', title:'', excerpt:'', category:'Maintenance', minutes:6, tags:[], body:'' };
+  
+    function toSlug(s){ return s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-'); }
+  
+    function renderTags(list){
+      tagsWrap.innerHTML = '';
+      (list||[]).forEach((t,i)=>{
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs';
+        b.textContent = t; b.title = 'Remove tag';
+        b.onclick = ()=>{ current.tags.splice(i,1); renderTags(current.tags); updatePreview(); };
         tagsWrap.appendChild(b);
-      });
+      })
     }
-
-    tagsInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === ",") {
+  
+    tagsInput.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' || e.key===','){
         e.preventDefault();
-        const v = tagsInput.value.trim().replace(/,$/, "");
-        if (v && !current.tags.includes(v)) current.tags.push(v);
-        tagsInput.value = "";
-        renderTags(current.tags);
-        updatePreview();
+        const v = tagsInput.value.trim().replace(/,$/,'');
+        if(v && !current.tags.includes(v)) current.tags.push(v);
+        tagsInput.value=''; renderTags(current.tags); updatePreview();
       }
     });
-
-    // Live preview attach/detach so checkbox truly controls it
-    const previewListeners = [
-      [title, "input", onTitleInput],
-      [excerpt, "input", updatePreview],
-      [category, "change", updatePreview],
-      [minutes, "input", updatePreview],
-      [body, "input", updatePreview],
-    ];
-
-    function onTitleInput() {
-      if (!slug.dataset.touched) slug.value = toSlug(title.value);
+  
+    // ======= Preview wiring =======
+    const autoPreview = el('autoPreview');
+    const pTitle = el('pTitle');
+    const pExcerpt = el('pExcerpt');
+    const pCategory = el('pCategory');
+    const pTags = el('pTags');
+    const pMinutes = el('pMinutes');
+    const pBody = el('pBody');
+  
+    function updatePreview(){
+      try {
+        pTitle.textContent = title.value || '—';
+        pExcerpt.textContent = excerpt.value || '—';
+        pCategory.textContent = category.value || '—';
+        pTags.innerHTML = (current.tags||[]).map(t=>`<span class='inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs'>${t}</span>`).join(' ');
+        pMinutes.textContent = `⏱️ ${Number(minutes.value||0)} min`;
+        const md = body.value || '';
+        const parse = (window.marked && window.marked.parse) ? window.marked.parse : (s=>s);
+        pBody.innerHTML = parse(md);
+      } catch(err){
+        console.error('Preview error:', err);
+      }
+    }
+  
+    // Live update wiring (and slug autofill)
+    title.addEventListener('input', ()=>{ if(!slug.dataset.touched){ slug.value = toSlug(title.value); } if(autoPreview?.checked !== false) updatePreview(); });
+    slug.addEventListener('input', ()=>{ slug.dataset.touched = '1'; });
+    body.addEventListener('input', ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
+    excerpt.addEventListener('input', ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
+    category.addEventListener('change', ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
+    minutes.addEventListener('input', ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
+    autoPreview?.addEventListener('change', ()=>{ if (autoPreview.checked) updatePreview(); });
+  
+    function syncToForm(a){
+      current = { ...current, ...a };
+      title.value = a.title||'';
+      slug.value = a.slug||'';
+      excerpt.value = a.excerpt||'';
+      category.value = a.category || 'Maintenance';
+      minutes.value = a.minutes || 6;
+      body.value = a.body || '';
+      renderTags(a.tags||[]);
       updatePreview();
     }
-
-    function setLivePreview(enabled) {
-      previewListeners.forEach(([n, e, f]) => {
-        n.removeEventListener(e, f);
-        if (enabled) n.addEventListener(e, f);
-      });
-    }
-    updatePreview();
-    setLivePreview(true);
-    autoPreview ? .addEventListener("change", () => {
-      setLivePreview(autoPreview.checked);
-      if (autoPreview.checked) updatePreview();
-    });
-
-    // ===== Save handler =====
-    async function handleSave(e) {
+  
+    el('resetBtn').onclick = ()=>{ syncToForm({ slug:'', title:'', excerpt:'', category:'Maintenance', minutes:6, tags:[], body:'' }); };
+  
+    // ======= Save (single, robust handler) =======
+    async function handleSave(e){
       try {
         e.preventDefault();
-        if (!supabase) {
-          alert("Not ready yet. Try again.");
-          return;
-        }
-
+        if (!supabase) { alert('Not ready yet. Try again.'); return; }
+  
         const payload = {
           slug: slug.value.trim(),
           title: title.value.trim(),
@@ -393,94 +307,59 @@ Your content here…"></textarea>
           body: body.value,
           category: category.value,
           tags: current.tags,
-          minutes: Number(minutes.value || 6),
+          minutes: Number(minutes.value || 6)
         };
-        if (!payload.slug || !payload.title) {
-          alert("Title and slug are required.");
-          return;
-        }
-
-        const {
-          data: {
-            session
-          },
-        } = await supabase.auth.getSession();
-        if (!session) {
-          alert("Session expired. Please sign in again.");
-          location.assign("/admin/login.html");
-          return;
-        }
-
-        saveBtn.disabled = true;
-        saveStatus.textContent = "Saving…";
+        if (!payload.slug || !payload.title) { alert('Title and slug are required.'); return; }
+  
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { alert('Session expired. Please sign in again.'); location.assign('/admin/login.html'); return; }
+  
+        saveBtn.disabled = true; saveStatus.textContent = 'Saving…';
+  
         const ctrl = new AbortController();
         const t = setTimeout(() => ctrl.abort(), 20000);
-
-        const res = await fetch("/.netlify/functions/upsert-article", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
+  
+        const res = await fetch('/.netlify/functions/upsert-article', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
           body: JSON.stringify(payload),
-          signal: ctrl.signal,
+          signal: ctrl.signal
         });
+  
         const text = await res.text();
-        if (!res.ok) {
-          console.error("Save error", res.status, text);
-          alert(`Save failed (${res.status}): ${text}`);
-          return;
-        }
-        showToast("Saved");
+        if (!res.ok) { console.error('Save error', res.status, text); alert(`Save failed (${res.status}): ${text}`); return; }
+        showToast('Saved');
       } catch (err) {
-        if (err.name === "AbortError") alert("Save timed out.");
+        if (err.name === 'AbortError') alert('Save timed out.');
         else alert(`Save error: ${err.message || String(err)}`);
       } finally {
-        saveBtn.disabled = false;
-        saveStatus.textContent = "";
+        saveBtn.disabled = false; saveStatus.textContent = '';
       }
     }
-
-    function showToast(msg) {
-      const t = document.getElementById("toast");
+  
+    function showToast(msg){
+      const t = document.getElementById('toast');
       t.firstElementChild.textContent = msg;
-      t.classList.remove("hidden");
-      setTimeout(() => t.classList.add("hidden"), 1400);
+      t.classList.remove('hidden');
+      setTimeout(()=> t.classList.add('hidden'), 1400);
     }
-
-    // ===== Boot =====
-    (async function boot() {
+  
+    // ======= Boot =======
+    (async function boot(){
       await initSupabase();
       const ok = await requireAdmin();
       if (!ok) return; // redirected
-
-      supabase.auth.onAuthStateChange(async () => {
-        const {
-          data: {
-            user
-          },
-        } = await supabase.auth.getUser();
-        if (!user) location.assign("/admin/login.html");
+  
+      supabase.auth.onAuthStateChange(async ()=>{
+        const { data:{ user } } = await supabase.auth.getUser();
+        if(!user) location.assign('/admin/login.html');
       });
-
-      const form = document.getElementById("editor");
-      form.addEventListener("submit", handleSave);
-      document.getElementById("resetBtn").addEventListener("click", () => {
-        current = {
-          slug: "",
-          title: "",
-          excerpt: "",
-          category: "Maintenance",
-          minutes: 6,
-          tags: [],
-          body: "",
-        };
-        title.value = slug.value = excerpt.value = body.value = "";
-        category.value = "Maintenance";
-        minutes.value = 6;
-        renderTags([]);
-        updatePreview();
-      });
+  
+      const form = document.getElementById('editor');
+      form.addEventListener('submit', handleSave);
+  
+      syncToForm(current);
+      updatePreview();
     })();
   </script>
 </body>
