@@ -239,75 +239,81 @@ if (autoPreview) autoPreview.addEventListener('change', ()=>{ if (autoPreview.ch
 
     el('resetBtn').onclick = ()=>{ syncToForm({ slug:'', title:'', excerpt:'', category:'Maintenance', minutes:6, tags:[], body:'' }); };
 
-    el('editor').addEventListener('submit', async (e) => {
-    e.preventDefault();
+    async function handleSave(e){
+      try {
+        e.preventDefault();
+        if (!supabase) { console.error('Supabase not initialised'); alert('Not ready yet — try again in a second.'); return; }
 
-    // Basic validation
-    const payload = {
-      slug: slug.value.trim(),
-      title: title.value.trim(),
-      excerpt: excerpt.value.trim(),
-      body: body.value,
-      category: category.value,
-      tags: current.tags,
-      minutes: Number(minutes.value || 6)
-    };
-    if (!payload.slug || !payload.title) {
-      return alert('Title and slug are required.');
+        // Basic validation
+        const payload = {
+          slug: slug.value.trim(),
+          title: title.value.trim(),
+          excerpt: excerpt.value.trim(),
+          body: body.value,
+          category: category.value,
+          tags: current.tags,
+          minutes: Number(minutes.value || 6)
+        };
+        if (!payload.slug || !payload.title) { alert('Title and slug are required.'); return; }
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { alert('Session expired. Please sign in again.'); location.assign('/admin/login.html'); return; }
+
+        // Show saving state
+        saveBtn.disabled = true; saveStatus.textContent = 'Saving…';
+
+        // Timeout guard (20s)
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 20000);
+
+        console.log('Saving payload', payload);
+        const res = await fetch('/.netlify/functions/upsert-article', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify(payload),
+          signal: ctrl.signal
+        });
+        const text = await res.text();
+        console.log('Save response', res.status, text);
+
+        if (!res.ok) { alert(`Save failed (${res.status}): ${text}`); return; }
+        showToast('Saved');
+      } catch (err) {
+        console.error('Save crash', err);
+        if (err.name === 'AbortError') alert('Save timed out.');
+        else alert(`Save error: ${err.message || String(err)}`);
+      } finally {
+        saveBtn.disabled = false; saveStatus.textContent = '';
+      }
     }
+      saveBtn.disabled = true; saveStatus.textContent = 'Saving…';
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { saveBtn.disabled=false; saveStatus.textContent=''; return alert('Session expired. Please sign in again.'); }
 
-    // Get session
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return alert('Session expired. Please sign in again.');
+      const payload = {
+        slug: slug.value.trim(),
+        title: title.value.trim(),
+        excerpt: excerpt.value.trim(),
+        body: body.value,
+        category: category.value,
+        tags: current.tags,
+        minutes: Number(minutes.value||6)
+      };
+      if(!payload.slug || !payload.title){ saveBtn.disabled=false; saveStatus.textContent=''; return alert('Title and slug are required.'); }
 
-    // Show saving state
-    saveBtn.disabled = true;
-    saveStatus.textContent = 'Saving…';
-
-    // Timeout guard (20s)
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 20000);
-
-    try {
       const res = await fetch('/.netlify/functions/upsert-article', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify(payload),
-        signal: ctrl.signal
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+        body: JSON.stringify(payload)
       });
-
-      const text = await res.text(); // capture raw response for better errors
-      if (!res.ok) {
-        console.error('Save error:', res.status, text);
-        alert(`Save failed (${res.status}): ${text}`);
-        return;
-      }
-
-      // Optionally parse JSON result
-      let data;
-      try { data = JSON.parse(text); } catch (_) { /* ignore */ }
-
+      const txt = await res.text();
+      saveBtn.disabled = false; saveStatus.textContent = '';
+      if(!res.ok) return alert(txt);
       showToast('Saved');
-    } catch (err) {
-      if (err.name === 'AbortError') {
-        alert('Save timed out. Check Netlify function logs and your network.');
-      } else {
-        console.error(err);
-        alert(`Save error: ${err.message || String(err)}`);
-      }
-    } finally {
-      clearTimeout(t);
-      saveBtn.disabled = false;
-      saveStatus.textContent = '';
-    }
-  });
-
-  // --- Preview heading tweak (just in case Tailwind/Prose spacing looked odd) ---
-  // Re-run preview once at load so headings appear immediately.
-  updatePreview();
+    });
 
     function showToast(msg){
       const t = document.getElementById('toast');
@@ -319,11 +325,21 @@ if (autoPreview) autoPreview.addEventListener('change', ()=>{ if (autoPreview.ch
     // ======= Boot =======
     (async function boot(){
       await initSupabase();
+      // Guard before wiring events
+      const ok = await requireAdmin();
+      if (!ok) return; // redirected
+
+      // Wire auth-guard on session loss
       supabase.auth.onAuthStateChange(async ()=>{
         const { data:{ user } } = await supabase.auth.getUser();
         if(!user) location.assign('/admin/login.html');
       });
-      if(!(await requireAdmin())) return; // will redirect if not admin
+
+      // Wire the save AFTER supabase + admin ready
+      const form = document.getElementById('editor');
+      if (!form) { console.error('Editor form not found'); return; }
+      form.addEventListener('submit', handleSave);
+
       syncToForm(current);
       updatePreview();
     })();
