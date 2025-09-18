@@ -1,22 +1,66 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sailing Savers · Admin Editor</title>
-  <meta name="description" content="Admin editor with live Markdown preview." />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⛵️</text></svg>">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="description" content="Admin-only editor with live Markdown preview and Netlify + Supabase wiring." />
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⛵️</text></svg>">
+  <!-- Tailwind + Typography plugin for .prose -->
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
   <script>
-    tailwind.config = { theme: { extend: { colors: { ocean:{50:'#eef8ff',100:'#d8f0ff',200:'#b9e3ff',300:'#8dd0ff',400:'#56b5ff',500:'#2996f5',600:'#1976d2',700:'#155fa9',800:'#124f8b',900:'#0f406f'}, kelp:{500:'#1d7a59'} } } } }
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ocean: {
+              50: '#eef8ff',
+              100: '#d8f0ff',
+              200: '#b9e3ff',
+              300: '#8dd0ff',
+              400: '#56b5ff',
+              500: '#2996f5',
+              600: '#1976d2',
+              700: '#155fa9',
+              800: '#124f8b',
+              900: '#0f406f'
+            },
+            kelp: {
+              500: '#1d7a59'
+            }
+          }
+        }
+      }
+    }
   </script>
+  <!-- Markdown renderer + Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    .card { transition: transform .2s ease, box-shadow .2s ease; }
-    .card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,.08); }
+    .card {
+      transition: transform .2s ease, box-shadow .2s ease
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, .08)
+    }
+
+    /* Slightly bigger headings inside preview */
+    .prose h1 {
+      font-size: 1.875rem;
+      line-height: 2.25rem
+    }
+
+    .prose h2 {
+      font-size: 1.5rem;
+      line-height: 2rem
+    }
   </style>
 </head>
+
 <body class="bg-slate-50 text-slate-900 min-h-screen">
   <!-- Top bar -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/80 border-b border-slate-200">
@@ -41,24 +85,31 @@
         <div class="grid md:grid-cols-2 gap-4">
           <label class="block">
             <span class="text-sm font-medium text-slate-700">Title</span>
-            <input id="title" class="mt-1 w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500" placeholder="Budget Antifouling: Save 40%…" required />
+            <input id="title"
+              class="mt-1 w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500"
+              placeholder="Budget Antifouling: Save 40%…" required />
           </label>
           <label class="block">
             <span class="text-sm font-medium text-slate-700">Slug</span>
-            <input id="slug" class="mt-1 w-full rounded-xl border-slate-300 font-mono focus:border-ocean-500 focus:ring-ocean-500" placeholder="budget-antifouling" required />
+            <input id="slug"
+              class="mt-1 w-full rounded-xl border-slate-300 font-mono focus:border-ocean-500 focus:ring-ocean-500"
+              placeholder="budget-antifouling" required />
             <p class="text-xs text-slate-500 mt-1">Auto-generated from title — you can edit.</p>
           </label>
         </div>
 
         <label class="block">
           <span class="text-sm font-medium text-slate-700">Excerpt</span>
-          <textarea id="excerpt" rows="2" class="mt-1 w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500" placeholder="Short teaser shown in lists"></textarea>
+          <textarea id="excerpt" rows="2"
+            class="mt-1 w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500"
+            placeholder="Short teaser shown in lists"></textarea>
         </label>
 
         <div class="grid md:grid-cols-3 gap-4">
           <label class="block">
             <span class="text-sm font-medium text-slate-700">Category</span>
-            <select id="category" class="mt-1 w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500">
+            <select id="category"
+              class="mt-1 w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500">
               <option>Maintenance</option>
               <option>Painting</option>
               <option>Fibreglass</option>
@@ -69,23 +120,30 @@
           </label>
           <label class="block">
             <span class="text-sm font-medium text-slate-700">Read time (min)</span>
-            <input id="minutes" type="number" min="1" value="6" class="mt-1 w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500" />
+            <input id="minutes" type="number" min="1" value="6"
+              class="mt-1 w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500" />
           </label>
           <label class="block">
             <span class="text-sm font-medium text-slate-700">Tags</span>
-            <input id="tagsInput" class="mt-1 w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500" placeholder="antifouling, paint, money" />
+            <input id="tagsInput"
+              class="mt-1 w-full rounded-xl border-slate-300 focus:border-ocean-500 focus:ring-ocean-500"
+              placeholder="antifouling, paint, money" />
             <div id="tags" class="mt-2 flex flex-wrap gap-2"></div>
           </label>
         </div>
 
         <label class="block">
           <span class="text-sm font-medium text-slate-700">Body (Markdown)</span>
-          <textarea id="body" rows="14" class="mt-1 w-full rounded-xl border-slate-300 font-mono leading-6 focus:border-ocean-500 focus:ring-ocean-500" placeholder="## Heading\nYour content here…"></textarea>
+          <textarea id="body" rows="16"
+            class="mt-1 w-full rounded-xl border-slate-300 font-mono leading-6 focus:border-ocean-500 focus:ring-ocean-500"
+            placeholder="## Heading\nYour content here…"></textarea>
         </label>
 
         <div class="flex items-center gap-3">
-          <button id="saveBtn" type="submit" class="rounded-xl px-5 py-3 bg-kelp-500 text-white hover:brightness-95">Save</button>
-          <button id="resetBtn" type="button" class="rounded-xl px-5 py-3 border border-slate-300 hover:bg-slate-50">Reset</button>
+          <button id="saveBtn" type="submit"
+            class="rounded-xl px-5 py-3 bg-kelp-500 text-white hover:brightness-95">Save</button>
+          <button id="resetBtn" type="button"
+            class="rounded-xl px-5 py-3 border border-slate-300 hover:bg-slate-50">Reset</button>
           <span id="saveStatus" class="text-sm text-slate-500"></span>
         </div>
       </form>
@@ -95,15 +153,19 @@
     <aside class="card bg-white border border-slate-200 rounded-2xl p-6">
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-bold">Preview</h2>
-        <label class="text-sm text-slate-600"><input id="autoPreview" type="checkbox" class="mr-2" checked /> Auto-update</label>
+        <label class="text-sm text-slate-600"><input id="autoPreview" type="checkbox" class="mr-2" checked />
+          Auto-update</label>
       </div>
       <article class="prose max-w-none mt-4">
         <h3 id="pTitle" class="text-2xl font-semibold">—</h3>
         <p id="pExcerpt" class="text-slate-600">—</p>
         <div class="mt-2 flex items-center gap-2 text-xs text-slate-600">
-          <span id="pCategory" class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200">Category</span>
+          <span id="pCategory"
+            class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200">Category</span>
           <span id="pTags" class="flex flex-wrap gap-2"></span>
-          <span id="pMinutes" class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200">⏱️ 0 min</span>
+          <span id="pMinutes"
+            class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200">⏱️ 0
+            min</span>
         </div>
         <hr class="my-4" />
         <div id="pBody" class="prose"></div>
@@ -117,29 +179,55 @@
   </div>
 
   <script>
-    // ======= Supabase init (runtime via Netlify function) =======
+    // ===== Supabase init via Netlify function =====
     let supabase;
-    async function initSupabase(){
-      const res = await fetch('/.netlify/functions/public-config', { cache: 'no-store' });
-      if(!res.ok){ alert('Failed to load config'); return; }
-      const { SUPABASE_URL, SUPABASE_ANON_KEY } = await res.json();
+    async function initSupabase() {
+      const res = await fetch('/.netlify/functions/public-config', {
+        cache: 'no-store'
+      });
+      if (!res.ok) {
+        alert('Failed to load config');
+        return;
+      }
+      const {
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+      } = await res.json();
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     }
 
-    // ======= Guard: admin only =======
-    async function requireAdmin(){
-      const { data: { user } } = await supabase.auth.getUser();
-      if(!user){ location.assign('/admin/login.html'); return false; }
-      const { data, error } = await supabase.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
-      if(error || !data?.is_admin){ await supabase.auth.signOut(); location.assign('/admin/login.html'); return false; }
+    // ===== Guard: admin only =====
+    async function requireAdmin() {
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
+      if (!user) {
+        location.assign('/admin/login.html');
+        return false;
+      }
+      const {
+        data,
+        error
+      } = await supabase.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
+      if (error || !data ? .is_admin) {
+        await supabase.auth.signOut();
+        location.assign('/admin/login.html');
+        return false;
+      }
       document.getElementById('userEmail').textContent = user.email || '';
       return true;
     }
 
-    // ======= Auth top-right =======
-    document.getElementById('signOut').onclick = async ()=>{ await supabase.auth.signOut(); location.assign('/admin/login.html'); };
+    // ===== Sign out =====
+    document.getElementById('signOut').addEventListener('click', async () => {
+      if (!supabase) return location.assign('/admin/login.html');
+      await supabase.auth.signOut();
+      location.assign('/admin/login.html');
+    });
 
-    // ======= Editor state =======
+    // ===== Elements =====
     const el = id => document.getElementById(id);
     const title = el('title');
     const slug = el('slug');
@@ -150,101 +238,126 @@
     const tagsWrap = el('tags');
     const body = el('body');
     const saveBtn = el('saveBtn');
-
-    // Live preview listeners
-    title.addEventListener('input', updatePreview);
-    body.addEventListener('input', updatePreview);
-    excerpt.addEventListener('input', updatePreview);
-    category.addEventListener('change', updatePreview);
-    minutes.addEventListener('input', updatePreview);
     const saveStatus = el('saveStatus');
 
-    let current = { slug:'', title:'', excerpt:'', category:'Maintenance', minutes:6, tags:[], body:'' };
+    // ===== Preview (robust wiring) =====
+    const autoPreview = el('autoPreview');
+    const pTitle = el('pTitle');
+    const pExcerpt = el('pExcerpt');
+    const pCategory = el('pCategory');
+    const pTags = el('pTags');
+    const pMinutes = el('pMinutes');
+    const pBody = el('pBody');
 
-    function toSlug(s){ return s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-'); }
-
-    title.addEventListener('input', ()=>{ if(!slug.dataset.touched){ slug.value = toSlug(title.value); } updatePreview(); });
-    slug.addEventListener('input', ()=>{ slug.dataset.touched = '1'; });
-
-    function renderTags(list){
-      tagsWrap.innerHTML = '';
-      (list||[]).forEach((t,i)=>{
-        const b = document.createElement('button');
-        b.type = 'button'; b.className = 'inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs';
-        b.textContent = t; b.title = 'Remove tag';
-        b.onclick = ()=>{ current.tags.splice(i,1); renderTags(current.tags); updatePreview(); };
-        tagsWrap.appendChild(b);
-      })
+    function renderMD(md) {
+      if (window.marked && typeof window.marked.parse === 'function') return window.marked.parse(md || '');
+      return (md || '').replace(/[&<>]/g, s => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;'
+      } [s]));
     }
 
-    tagsInput.addEventListener('keydown', (e)=>{
-      if(e.key==='Enter' || e.key===','){
+    let current = {
+      slug: '',
+      title: '',
+      excerpt: '',
+      category: 'Maintenance',
+      minutes: 6,
+      tags: [],
+      body: ''
+    };
+
+    function toSlug(s) {
+      return s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+    }
+
+    function updatePreview() {
+      pTitle.textContent = title.value || '—';
+      pExcerpt.textContent = excerpt.value || '—';
+      pCategory.textContent = category.value || '—';
+      pTags.innerHTML = (current.tags || []).map(t =>
+        `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs">${t}</span>`
+        ).join(' ');
+      pMinutes.textContent = `⏱️ ${Number(minutes.value||0)} min`;
+      pBody.innerHTML = renderMD(body.value || '');
+    }
+
+    // slug autofill & tag chips
+    title.addEventListener('input', () => {
+      if (!slug.dataset.touched) {
+        slug.value = toSlug(title.value);
+      }
+    });
+    slug.addEventListener('input', () => {
+      slug.dataset.touched = '1';
+    });
+
+    function renderTags(list) {
+      tagsWrap.innerHTML = '';
+      (list || []).forEach((t, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className =
+          'inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs';
+        b.textContent = t;
+        b.title = 'Remove tag';
+        b.onclick = () => {
+          current.tags.splice(i, 1);
+          renderTags(current.tags);
+          updatePreview();
+        };
+        tagsWrap.appendChild(b);
+      });
+    }
+
+    tagsInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ',') {
         e.preventDefault();
-        const v = tagsInput.value.trim().replace(/,$/,'');
-        if(v && !current.tags.includes(v)) current.tags.push(v);
-        tagsInput.value=''; renderTags(current.tags); updatePreview();
+        const v = tagsInput.value.trim().replace(/,$/, '');
+        if (v && !current.tags.includes(v)) current.tags.push(v);
+        tagsInput.value = '';
+        renderTags(current.tags);
+        updatePreview();
       }
     });
 
-    const autoPreview = el('autoPreview');
-const pTitle = el('pTitle');
-const pExcerpt = el('pExcerpt');
-const pCategory = el('pCategory');
-const pTags = el('pTags');
-const pMinutes = el('pMinutes');
-const pBody = el('pBody');
+    // Live preview attach/detach so checkbox truly controls it
+    const previewListeners = [
+      [title, 'input', onTitleInput],
+      [excerpt, 'input', updatePreview],
+      [category, 'change', updatePreview],
+      [minutes, 'input', updatePreview],
+      [body, 'input', updatePreview],
+    ];
 
-// Ensure preview always renders; the checkbox will simply pause live updates, but manual calls still work.
-function updatePreview(){
-  try {
-    pTitle.textContent = title.value || '—';
-    pExcerpt.textContent = excerpt.value || '—';
-    pCategory.textContent = category.value || '—';
-    pTags.innerHTML = (current.tags||[]).map(t=>`<span class='inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs'>${t}</span>`).join(' ');
-    pMinutes.textContent = `⏱️ ${Number(minutes.value||0)} min`;
-    const md = body.value || '';
-    let parse;
-    if (window.marked) {
-      parse = (typeof window.marked === 'function') ? window.marked : window.marked.parse;
-    } else {
-      parse = (s)=> s; // fallback: raw text
-    }
-    pBody.innerHTML = parse(md);
-  } catch(err){
-    console.error('Preview error:', err);
-  }
-}
-
-// Live update wiring
-['input','change'].forEach(evt=>{
-  title.addEventListener(evt, ()=>{ if(!slug.dataset.touched && evt==='input'){ slug.value = toSlug(title.value); } if(autoPreview?.checked !== false) updatePreview(); });
-  excerpt.addEventListener(evt, ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
-  category.addEventListener(evt, ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
-  minutes.addEventListener(evt, ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
-  body.addEventListener(evt, ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
-});
-if (autoPreview) autoPreview.addEventListener('change', ()=>{ if (autoPreview.checked) updatePreview(); });
-
-    function syncToForm(a){
-      current = { ...current, ...a };
-      title.value = a.title||'';
-      slug.value = a.slug||'';
-      excerpt.value = a.excerpt||'';
-      category.value = a.category || 'Maintenance';
-      minutes.value = a.minutes || 6;
-      body.value = a.body || '';
-      renderTags(a.tags||[]);
+    function onTitleInput() {
+      if (!slug.dataset.touched) slug.value = toSlug(title.value);
       updatePreview();
     }
 
-    el('resetBtn').onclick = ()=>{ syncToForm({ slug:'', title:'', excerpt:'', category:'Maintenance', minutes:6, tags:[], body:'' }); };
+    function setLivePreview(enabled) {
+      previewListeners.forEach(([n, e, f]) => {
+        n.removeEventListener(e, f);
+        if (enabled) n.addEventListener(e, f);
+      });
+    }
+    updatePreview();
+    setLivePreview(true);
+    autoPreview ? .addEventListener('change', () => {
+      setLivePreview(autoPreview.checked);
+      if (autoPreview.checked) updatePreview();
+    });
 
-    async function handleSave(e){
+    // ===== Save handler =====
+    async function handleSave(e) {
       try {
         e.preventDefault();
-        if (!supabase) { console.error('Supabase not initialised'); alert('Not ready yet — try again in a second.'); return; }
+        if (!supabase) {
+          alert('Not ready yet. Try again.');
+          return;
+        }
 
-        // Basic validation
         const payload = {
           slug: slug.value.trim(),
           title: title.value.trim(),
@@ -254,19 +367,27 @@ if (autoPreview) autoPreview.addEventListener('change', ()=>{ if (autoPreview.ch
           tags: current.tags,
           minutes: Number(minutes.value || 6)
         };
-        if (!payload.slug || !payload.title) { alert('Title and slug are required.'); return; }
+        if (!payload.slug || !payload.title) {
+          alert('Title and slug are required.');
+          return;
+        }
 
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { alert('Session expired. Please sign in again.'); location.assign('/admin/login.html'); return; }
+        const {
+          data: {
+            session
+          }
+        } = await supabase.auth.getSession();
+        if (!session) {
+          alert('Session expired. Please sign in again.');
+          location.assign('/admin/login.html');
+          return;
+        }
 
-        // Show saving state
-        saveBtn.disabled = true; saveStatus.textContent = 'Saving…';
-
-        // Timeout guard (20s)
+        saveBtn.disabled = true;
+        saveStatus.textContent = 'Saving…';
         const ctrl = new AbortController();
         const t = setTimeout(() => ctrl.abort(), 20000);
 
-        console.log('Saving payload', payload);
         const res = await fetch('/.netlify/functions/upsert-article', {
           method: 'POST',
           headers: {
@@ -277,72 +398,63 @@ if (autoPreview) autoPreview.addEventListener('change', ()=>{ if (autoPreview.ch
           signal: ctrl.signal
         });
         const text = await res.text();
-        console.log('Save response', res.status, text);
-
-        if (!res.ok) { alert(`Save failed (${res.status}): ${text}`); return; }
+        if (!res.ok) {
+          console.error('Save error', res.status, text);
+          alert(`Save failed (${res.status}): ${text}`);
+          return;
+        }
         showToast('Saved');
       } catch (err) {
-        console.error('Save crash', err);
         if (err.name === 'AbortError') alert('Save timed out.');
-        else alert(`Save error: ${err.message || String(err)}`);
+        else alert(`Save error: ${err.message||String(err)}`);
       } finally {
-        saveBtn.disabled = false; saveStatus.textContent = '';
+        saveBtn.disabled = false;
+        saveStatus.textContent = '';
       }
     }
-      saveBtn.disabled = true; saveStatus.textContent = 'Saving…';
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { saveBtn.disabled=false; saveStatus.textContent=''; return alert('Session expired. Please sign in again.'); }
 
-      const payload = {
-        slug: slug.value.trim(),
-        title: title.value.trim(),
-        excerpt: excerpt.value.trim(),
-        body: body.value,
-        category: category.value,
-        tags: current.tags,
-        minutes: Number(minutes.value||6)
-      };
-      if(!payload.slug || !payload.title){ saveBtn.disabled=false; saveStatus.textContent=''; return alert('Title and slug are required.'); }
-
-      const res = await fetch('/.netlify/functions/upsert-article', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-        body: JSON.stringify(payload)
-      });
-      const txt = await res.text();
-      saveBtn.disabled = false; saveStatus.textContent = '';
-      if(!res.ok) return alert(txt);
-      showToast('Saved');
-    });
-
-    function showToast(msg){
+    function showToast(msg) {
       const t = document.getElementById('toast');
       t.firstElementChild.textContent = msg;
       t.classList.remove('hidden');
-      setTimeout(()=> t.classList.add('hidden'), 1400);
+      setTimeout(() => t.classList.add('hidden'), 1400);
     }
 
-    // ======= Boot =======
-    (async function boot(){
+    // ===== Boot =====
+    (async function boot() {
       await initSupabase();
-      // Guard before wiring events
       const ok = await requireAdmin();
       if (!ok) return; // redirected
 
-      // Wire auth-guard on session loss
-      supabase.auth.onAuthStateChange(async ()=>{
-        const { data:{ user } } = await supabase.auth.getUser();
-        if(!user) location.assign('/admin/login.html');
+      supabase.auth.onAuthStateChange(async () => {
+        const {
+          data: {
+            user
+          }
+        } = await supabase.auth.getUser();
+        if (!user) location.assign('/admin/login.html');
       });
 
-      // Wire the save AFTER supabase + admin ready
       const form = document.getElementById('editor');
-      if (!form) { console.error('Editor form not found'); return; }
       form.addEventListener('submit', handleSave);
-
-      syncToForm(current);
-      updatePreview();
+      document.getElementById('resetBtn').addEventListener('click', () => {
+        current = {
+          slug: '',
+          title: '',
+          excerpt: '',
+          category: 'Maintenance',
+          minutes: 6,
+          tags: [],
+          body: ''
+        };
+        title.value = slug.value = excerpt.value = body.value = '';
+        category.value = 'Maintenance';
+        minutes.value = 6;
+        renderTags([]);
+        updatePreview();
+      });
     })();
   </script>
 </body>
+
 </html>
