@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -7,7 +7,7 @@
   <title>Sailing Savers · Admin Editor</title>
   <meta name="description" content="Admin-only editor with live Markdown preview and Netlify + Supabase wiring." />
   <link rel="icon"
-    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⛵️</text></svg>">
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⛵️</text></svg>" />
   <!-- Tailwind + Typography plugin for .prose -->
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
   <script>
@@ -16,47 +16,47 @@
         extend: {
           colors: {
             ocean: {
-              50: '#eef8ff',
-              100: '#d8f0ff',
-              200: '#b9e3ff',
-              300: '#8dd0ff',
-              400: '#56b5ff',
-              500: '#2996f5',
-              600: '#1976d2',
-              700: '#155fa9',
-              800: '#124f8b',
-              900: '#0f406f'
+              50: "#eef8ff",
+              100: "#d8f0ff",
+              200: "#b9e3ff",
+              300: "#8dd0ff",
+              400: "#56b5ff",
+              500: "#2996f5",
+              600: "#1976d2",
+              700: "#155fa9",
+              800: "#124f8b",
+              900: "#0f406f",
             },
             kelp: {
-              500: '#1d7a59'
-            }
-          }
-        }
-      }
-    }
+              500: "#1d7a59"
+            },
+          },
+        },
+      },
+    };
   </script>
   <!-- Markdown renderer + Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     .card {
-      transition: transform .2s ease, box-shadow .2s ease
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, .08)
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
     }
 
     /* Slightly bigger headings inside preview */
     .prose h1 {
       font-size: 1.875rem;
-      line-height: 2.25rem
+      line-height: 2.25rem;
     }
 
     .prose h2 {
       font-size: 1.5rem;
-      line-height: 2rem
+      line-height: 2rem;
     }
   </style>
 </head>
@@ -71,7 +71,9 @@
       </a>
       <div class="ml-auto flex items-center gap-2 text-sm">
         <span id="userEmail" class="text-slate-600"></span>
-        <button id="signOut" class="rounded-xl px-3 py-1.5 border border-slate-300 hover:bg-slate-50">Sign out</button>
+        <button id="signOut" class="rounded-xl px-3 py-1.5 border border-slate-300 hover:bg-slate-50">
+          Sign out
+        </button>
       </div>
     </div>
   </header>
@@ -94,7 +96,9 @@
             <input id="slug"
               class="mt-1 w-full rounded-xl border-slate-300 font-mono focus:border-ocean-500 focus:ring-ocean-500"
               placeholder="budget-antifouling" required />
-            <p class="text-xs text-slate-500 mt-1">Auto-generated from title — you can edit.</p>
+            <p class="text-xs text-slate-500 mt-1">
+              Auto-generated from title — you can edit.
+            </p>
           </label>
         </div>
 
@@ -136,14 +140,17 @@
           <span class="text-sm font-medium text-slate-700">Body (Markdown)</span>
           <textarea id="body" rows="16"
             class="mt-1 w-full rounded-xl border-slate-300 font-mono leading-6 focus:border-ocean-500 focus:ring-ocean-500"
-            placeholder="## Heading\nYour content here…"></textarea>
+            placeholder="## Heading
+Your content here…"></textarea>
         </label>
 
         <div class="flex items-center gap-3">
-          <button id="saveBtn" type="submit"
-            class="rounded-xl px-5 py-3 bg-kelp-500 text-white hover:brightness-95">Save</button>
-          <button id="resetBtn" type="button"
-            class="rounded-xl px-5 py-3 border border-slate-300 hover:bg-slate-50">Reset</button>
+          <button id="saveBtn" type="submit" class="rounded-xl px-5 py-3 bg-kelp-500 text-white hover:brightness-95">
+            Save
+          </button>
+          <button id="resetBtn" type="button" class="rounded-xl px-5 py-3 border border-slate-300 hover:bg-slate-50">
+            Reset
+          </button>
           <span id="saveStatus" class="text-sm text-slate-500"></span>
         </div>
       </form>
@@ -175,25 +182,30 @@
 
   <!-- Toast -->
   <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 hidden">
-    <div class="rounded-xl bg-ocean-900 text-white px-4 py-2 shadow-lg">Saved!</div>
+    <div class="rounded-xl bg-ocean-900 text-white px-4 py-2 shadow-lg">
+      Saved!
+    </div>
   </div>
 
   <script>
     // ===== Supabase init via Netlify function =====
     let supabase;
     async function initSupabase() {
-      const res = await fetch('/.netlify/functions/public-config', {
-        cache: 'no-store'
+      const res = await fetch("/.netlify/functions/public-config", {
+        cache: "no-store",
       });
       if (!res.ok) {
-        alert('Failed to load config');
+        alert("Failed to load config");
         return;
       }
       const {
         SUPABASE_URL,
         SUPABASE_ANON_KEY
       } = await res.json();
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      supabase = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+      );
     }
 
     // ===== Guard: admin only =====
@@ -201,107 +213,123 @@
       const {
         data: {
           user
-        }
+        },
       } = await supabase.auth.getUser();
       if (!user) {
-        location.assign('/admin/login.html');
+        location.assign("/admin/login.html");
         return false;
       }
       const {
         data,
         error
-      } = await supabase.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
+      } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", user.id)
+        .maybeSingle();
       if (error || !data ? .is_admin) {
         await supabase.auth.signOut();
-        location.assign('/admin/login.html');
+        location.assign("/admin/login.html");
         return false;
       }
-      document.getElementById('userEmail').textContent = user.email || '';
+      document.getElementById("userEmail").textContent = user.email || "";
       return true;
     }
 
     // ===== Sign out =====
-    document.getElementById('signOut').addEventListener('click', async () => {
-      if (!supabase) return location.assign('/admin/login.html');
+    document.getElementById("signOut").addEventListener("click", async () => {
+      if (!supabase) return location.assign("/admin/login.html");
       await supabase.auth.signOut();
-      location.assign('/admin/login.html');
+      location.assign("/admin/login.html");
     });
 
     // ===== Elements =====
-    const el = id => document.getElementById(id);
-    const title = el('title');
-    const slug = el('slug');
-    const excerpt = el('excerpt');
-    const category = el('category');
-    const minutes = el('minutes');
-    const tagsInput = el('tagsInput');
-    const tagsWrap = el('tags');
-    const body = el('body');
-    const saveBtn = el('saveBtn');
-    const saveStatus = el('saveStatus');
+    const el = (id) => document.getElementById(id);
+    const title = el("title");
+    const slug = el("slug");
+    const excerpt = el("excerpt");
+    const category = el("category");
+    const minutes = el("minutes");
+    const tagsInput = el("tagsInput");
+    const tagsWrap = el("tags");
+    const body = el("body");
+    const saveBtn = el("saveBtn");
+    const saveStatus = el("saveStatus");
 
     // ===== Preview (robust wiring) =====
-    const autoPreview = el('autoPreview');
-    const pTitle = el('pTitle');
-    const pExcerpt = el('pExcerpt');
-    const pCategory = el('pCategory');
-    const pTags = el('pTags');
-    const pMinutes = el('pMinutes');
-    const pBody = el('pBody');
+    const autoPreview = el("autoPreview");
+    const pTitle = el("pTitle");
+    const pExcerpt = el("pExcerpt");
+    const pCategory = el("pCategory");
+    const pTags = el("pTags");
+    const pMinutes = el("pMinutes");
+    const pBody = el("pBody");
 
     function renderMD(md) {
-      if (window.marked && typeof window.marked.parse === 'function') return window.marked.parse(md || '');
-      return (md || '').replace(/[&<>]/g, s => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;'
-      } [s]));
+      if (window.marked && typeof window.marked.parse === "function")
+        return window.marked.parse(md || "");
+      return (md || "").replace(
+        /[&<>]/g,
+        (s) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;"
+        } [s])
+      );
     }
 
     let current = {
-      slug: '',
-      title: '',
-      excerpt: '',
-      category: 'Maintenance',
+      slug: "",
+      title: "",
+      excerpt: "",
+      category: "Maintenance",
       minutes: 6,
       tags: [],
-      body: ''
+      body: "",
     };
 
     function toSlug(s) {
-      return s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+      return s
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\\s-]/g, "")
+        .replace(/\\s+/g, "-")
+        .replace(/-+/g, "-");
     }
 
     function updatePreview() {
-      pTitle.textContent = title.value || '—';
-      pExcerpt.textContent = excerpt.value || '—';
-      pCategory.textContent = category.value || '—';
-      pTags.innerHTML = (current.tags || []).map(t =>
-        `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs">${t}</span>`
-        ).join(' ');
-      pMinutes.textContent = `⏱️ ${Number(minutes.value||0)} min`;
-      pBody.innerHTML = renderMD(body.value || '');
+      pTitle.textContent = title.value || "—";
+      pExcerpt.textContent = excerpt.value || "—";
+      pCategory.textContent = category.value || "—";
+      pTags.innerHTML = (current.tags || [])
+        .map(
+          (t) =>
+          `<span class=\"inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs\">${t}</span>`
+        )
+        .join(" ");
+      pMinutes.textContent = `⏱️ ${Number(minutes.value || 0)} min`;
+      pBody.innerHTML = renderMD(body.value || "");
     }
 
     // slug autofill & tag chips
-    title.addEventListener('input', () => {
+    title.addEventListener("input", () => {
       if (!slug.dataset.touched) {
         slug.value = toSlug(title.value);
       }
     });
-    slug.addEventListener('input', () => {
-      slug.dataset.touched = '1';
+    slug.addEventListener("input", () => {
+      slug.dataset.touched = "1";
     });
 
     function renderTags(list) {
-      tagsWrap.innerHTML = '';
+      tagsWrap.innerHTML = "";
       (list || []).forEach((t, i) => {
-        const b = document.createElement('button');
-        b.type = 'button';
+        const b = document.createElement("button");
+        b.type = "button";
         b.className =
-          'inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs';
+          "inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs";
         b.textContent = t;
-        b.title = 'Remove tag';
+        b.title = "Remove tag";
         b.onclick = () => {
           current.tags.splice(i, 1);
           renderTags(current.tags);
@@ -311,12 +339,12 @@
       });
     }
 
-    tagsInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ',') {
+    tagsInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === ",") {
         e.preventDefault();
-        const v = tagsInput.value.trim().replace(/,$/, '');
+        const v = tagsInput.value.trim().replace(/,$/, "");
         if (v && !current.tags.includes(v)) current.tags.push(v);
-        tagsInput.value = '';
+        tagsInput.value = "";
         renderTags(current.tags);
         updatePreview();
       }
@@ -324,11 +352,11 @@
 
     // Live preview attach/detach so checkbox truly controls it
     const previewListeners = [
-      [title, 'input', onTitleInput],
-      [excerpt, 'input', updatePreview],
-      [category, 'change', updatePreview],
-      [minutes, 'input', updatePreview],
-      [body, 'input', updatePreview],
+      [title, "input", onTitleInput],
+      [excerpt, "input", updatePreview],
+      [category, "change", updatePreview],
+      [minutes, "input", updatePreview],
+      [body, "input", updatePreview],
     ];
 
     function onTitleInput() {
@@ -344,7 +372,7 @@
     }
     updatePreview();
     setLivePreview(true);
-    autoPreview ? .addEventListener('change', () => {
+    autoPreview ? .addEventListener("change", () => {
       setLivePreview(autoPreview.checked);
       if (autoPreview.checked) updatePreview();
     });
@@ -354,7 +382,7 @@
       try {
         e.preventDefault();
         if (!supabase) {
-          alert('Not ready yet. Try again.');
+          alert("Not ready yet. Try again.");
           return;
         }
 
@@ -365,59 +393,59 @@
           body: body.value,
           category: category.value,
           tags: current.tags,
-          minutes: Number(minutes.value || 6)
+          minutes: Number(minutes.value || 6),
         };
         if (!payload.slug || !payload.title) {
-          alert('Title and slug are required.');
+          alert("Title and slug are required.");
           return;
         }
 
         const {
           data: {
             session
-          }
+          },
         } = await supabase.auth.getSession();
         if (!session) {
-          alert('Session expired. Please sign in again.');
-          location.assign('/admin/login.html');
+          alert("Session expired. Please sign in again.");
+          location.assign("/admin/login.html");
           return;
         }
 
         saveBtn.disabled = true;
-        saveStatus.textContent = 'Saving…';
+        saveStatus.textContent = "Saving…";
         const ctrl = new AbortController();
         const t = setTimeout(() => ctrl.abort(), 20000);
 
-        const res = await fetch('/.netlify/functions/upsert-article', {
-          method: 'POST',
+        const res = await fetch("/.netlify/functions/upsert-article", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify(payload),
-          signal: ctrl.signal
+          signal: ctrl.signal,
         });
         const text = await res.text();
         if (!res.ok) {
-          console.error('Save error', res.status, text);
+          console.error("Save error", res.status, text);
           alert(`Save failed (${res.status}): ${text}`);
           return;
         }
-        showToast('Saved');
+        showToast("Saved");
       } catch (err) {
-        if (err.name === 'AbortError') alert('Save timed out.');
-        else alert(`Save error: ${err.message||String(err)}`);
+        if (err.name === "AbortError") alert("Save timed out.");
+        else alert(`Save error: ${err.message || String(err)}`);
       } finally {
         saveBtn.disabled = false;
-        saveStatus.textContent = '';
+        saveStatus.textContent = "";
       }
     }
 
     function showToast(msg) {
-      const t = document.getElementById('toast');
+      const t = document.getElementById("toast");
       t.firstElementChild.textContent = msg;
-      t.classList.remove('hidden');
-      setTimeout(() => t.classList.add('hidden'), 1400);
+      t.classList.remove("hidden");
+      setTimeout(() => t.classList.add("hidden"), 1400);
     }
 
     // ===== Boot =====
@@ -430,25 +458,25 @@
         const {
           data: {
             user
-          }
+          },
         } = await supabase.auth.getUser();
-        if (!user) location.assign('/admin/login.html');
+        if (!user) location.assign("/admin/login.html");
       });
 
-      const form = document.getElementById('editor');
-      form.addEventListener('submit', handleSave);
-      document.getElementById('resetBtn').addEventListener('click', () => {
+      const form = document.getElementById("editor");
+      form.addEventListener("submit", handleSave);
+      document.getElementById("resetBtn").addEventListener("click", () => {
         current = {
-          slug: '',
-          title: '',
-          excerpt: '',
-          category: 'Maintenance',
+          slug: "",
+          title: "",
+          excerpt: "",
+          category: "Maintenance",
           minutes: 6,
           tags: [],
-          body: ''
+          body: "",
         };
-        title.value = slug.value = excerpt.value = body.value = '';
-        category.value = 'Maintenance';
+        title.value = slug.value = excerpt.value = body.value = "";
+        category.value = "Maintenance";
         minutes.value = 6;
         renderTags([]);
         updatePreview();
