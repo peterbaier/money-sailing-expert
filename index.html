@@ -246,13 +246,13 @@
     const count = document.getElementById('count');
 
     function articleCard(a) {
-  const el = document.createElement('article');
-  el.className = 'card rounded-2xl bg-white border border-slate-200 overflow-hidden flex flex-col';
+      console.log("cover url:", a.cover_url);
+      const el = document.createElement('article');
+      el.className = 'card rounded-2xl bg-white border border-slate-200 overflow-hidden flex flex-col';
 
-  const coverHtml = a.cover_url
-    ? `<img src="${a.cover_url}" alt="${a.title || 'cover image'}"
-            class="h-36 w-full object-cover">`
-    : `<div class="h-36 bg-gradient-to-br from-ocean-200 to-ocean-400"></div>`;
+       const coverHtml = a.cover_url
+         ? `<img src="${a.cover_url}" alt="${a.title || 'cover image'}"class="h-36 w-full object-cover">`
+         : `<div class="h-36 bg-gradient-to-br from-ocean-200 to-ocean-400"></div>`;
 
   el.innerHTML = `
     <div class="relative">
@@ -338,7 +338,7 @@
     async function fetchArticles(){
       const { data, error } = await supabase
         .from('articles')
-        .select('id, title, slug, excerpt, category, minutes, tags, published_at')
+        .select('id, title, slug, excerpt, category, minutes, tags, cover_url, published_at')
         .not('published_at','is',null)
         .lte('published_at', new Date().toISOString())
         .order('published_at', { ascending: false })
