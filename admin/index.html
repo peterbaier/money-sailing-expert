@@ -138,10 +138,25 @@
 
         <label class="block">
           <span class="text-sm font-medium text-slate-700">Body (Markdown)</span>
+          <!-- Cover image -->
+          <label class="block">
+            <span class="text-sm font-medium text-slate-700">Cover image</span>
+            <input id="coverFile" type="file" accept="image/*" class="mt-1 block w-full rounded-xl border-slate-300" />
+            <div id="coverPreview" class="mt-2 text-sm text-slate-600"></div>
+          </label>
+
+          <!-- Upload inline image (inserts Markdown at cursor) -->
+          <div class="flex items-center gap-2">
+            <button id="btnUploadInline" type="button"
+              class="rounded-xl px-3 py-2 border border-slate-300 hover:bg-slate-50">
+              Upload inline image
+            </button>
+            <span class="text-xs text-slate-500">Inserts <code>![alt](url)</code> at cursor</span>
+          </div>
           <textarea id="body" rows="16"
             class="mt-1 w-full rounded-xl border-slate-300 font-mono leading-6 focus:border-ocean-500 focus:ring-ocean-500"
             placeholder="## Heading
-Your content here…"></textarea>
+            Your content here…"></textarea>
         </label>
 
         <div class="flex items-center gap-3">
@@ -190,26 +205,51 @@ Your content here…"></textarea>
   <script>
     // ======= Supabase init (runtime via Netlify function) =======
     let supabase;
-    async function initSupabase(){
-      const res = await fetch('/.netlify/functions/public-config', { cache: 'no-store' });
-      if(!res.ok){ alert('Failed to load config'); return; }
-      const { SUPABASE_URL, SUPABASE_ANON_KEY } = await res.json();
+    async function initSupabase() {
+      const res = await fetch('/.netlify/functions/public-config', {
+        cache: 'no-store'
+      });
+      if (!res.ok) {
+        alert('Failed to load config');
+        return;
+      }
+      const {
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+      } = await res.json();
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     }
-  
+
     // ======= Guard: admin only =======
-    async function requireAdmin(){
-      const { data: { user } } = await supabase.auth.getUser();
-      if(!user){ location.assign('/admin/login.html'); return false; }
-      const { data, error } = await supabase.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
-      if(error || !data?.is_admin){ await supabase.auth.signOut(); location.assign('/admin/login.html'); return false; }
+    async function requireAdmin() {
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
+      if (!user) {
+        location.assign('/admin/login.html');
+        return false;
+      }
+      const {
+        data,
+        error
+      } = await supabase.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
+      if (error || !data ? .is_admin) {
+        await supabase.auth.signOut();
+        location.assign('/admin/login.html');
+        return false;
+      }
       document.getElementById('userEmail').textContent = user.email || '';
       return true;
     }
-  
+
     // ======= Auth top-right =======
-    document.getElementById('signOut').onclick = async ()=>{ await supabase.auth.signOut(); location.assign('/admin/login.html'); };
-  
+    document.getElementById('signOut').onclick = async () => {
+      await supabase.auth.signOut();
+      location.assign('/admin/login.html');
+    };
+
     // ======= Editor state =======
     const el = id => document.getElementById(id);
     const title = el('title');
@@ -222,31 +262,52 @@ Your content here…"></textarea>
     const body = el('body');
     const saveBtn = el('saveBtn');
     const saveStatus = el('saveStatus');
-  
-    let current = { slug:'', title:'', excerpt:'', category:'Maintenance', minutes:6, tags:[], body:'' };
-  
-    function toSlug(s){ return s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-'); }
-  
-    function renderTags(list){
+    const coverFile = el('coverFile');
+    const btnUploadInline = el('btnUploadInline');
+
+    let current = {
+      slug: '',
+      title: '',
+      excerpt: '',
+      category: 'Maintenance',
+      minutes: 6,
+      tags: [],
+      body: ''
+    };
+
+    function toSlug(s) {
+      return s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+    }
+
+    function renderTags(list) {
       tagsWrap.innerHTML = '';
-      (list||[]).forEach((t,i)=>{
-        const b = document.createElement('button');
-        b.type = 'button'; b.className = 'inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs';
-        b.textContent = t; b.title = 'Remove tag';
-        b.onclick = ()=>{ current.tags.splice(i,1); renderTags(current.tags); updatePreview(); };
+      (list || []).forEach((t, i) => {
+      const b = document.createElement('button');
+        b.type = 'button';
+        b.className =
+          'inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs';
+        b.textContent = t;
+        b.title = 'Remove tag';
+        b.onclick = () => {
+          current.tags.splice(i, 1);
+          renderTags(current.tags);
+          updatePreview();
+        };
         tagsWrap.appendChild(b);
       })
     }
-  
-    tagsInput.addEventListener('keydown', (e)=>{
-      if(e.key==='Enter' || e.key===','){
+
+    tagsInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ',') {
         e.preventDefault();
-        const v = tagsInput.value.trim().replace(/,$/,'');
-        if(v && !current.tags.includes(v)) current.tags.push(v);
-        tagsInput.value=''; renderTags(current.tags); updatePreview();
+        const v = tagsInput.value.trim().replace(/,$/, '');
+        if (v && !current.tags.includes(v)) current.tags.push(v);
+        tagsInput.value = '';
+        renderTags(current.tags);
+        updatePreview();
       }
     });
-  
+
     // ======= Preview wiring =======
     const autoPreview = el('autoPreview');
     const pTitle = el('pTitle');
@@ -255,51 +316,86 @@ Your content here…"></textarea>
     const pTags = el('pTags');
     const pMinutes = el('pMinutes');
     const pBody = el('pBody');
-  
-    function updatePreview(){
+
+    function updatePreview() {
       try {
         pTitle.textContent = title.value || '—';
         pExcerpt.textContent = excerpt.value || '—';
         pCategory.textContent = category.value || '—';
-        pTags.innerHTML = (current.tags||[]).map(t=>`<span class='inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs'>${t}</span>`).join(' ');
+        pTags.innerHTML = (current.tags || []).map(t =>
+          `<span class='inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs'>${t}</span>`
+          ).join(' ');
         pMinutes.textContent = `⏱️ ${Number(minutes.value||0)} min`;
         const md = body.value || '';
-        const parse = (window.marked && window.marked.parse) ? window.marked.parse : (s=>s);
+        const parse = (window.marked && window.marked.parse) ? window.marked.parse : (s => s);
         pBody.innerHTML = parse(md);
-      } catch(err){
+      } catch (err) {
         console.error('Preview error:', err);
       }
     }
-  
+
     // Live update wiring (and slug autofill)
-    title.addEventListener('input', ()=>{ if(!slug.dataset.touched){ slug.value = toSlug(title.value); } if(autoPreview?.checked !== false) updatePreview(); });
-    slug.addEventListener('input', ()=>{ slug.dataset.touched = '1'; });
-    body.addEventListener('input', ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
-    excerpt.addEventListener('input', ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
-    category.addEventListener('change', ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
-    minutes.addEventListener('input', ()=>{ if(autoPreview?.checked !== false) updatePreview(); });
-    autoPreview?.addEventListener('change', ()=>{ if (autoPreview.checked) updatePreview(); });
-  
-    function syncToForm(a){
-      current = { ...current, ...a };
-      title.value = a.title||'';
-      slug.value = a.slug||'';
-      excerpt.value = a.excerpt||'';
+    title.addEventListener('input', () => {
+      if (!slug.dataset.touched) {
+        slug.value = toSlug(title.value);
+      }
+      if (autoPreview ? .checked !== false) updatePreview();
+    });
+    slug.addEventListener('input', () => {
+      slug.dataset.touched = '1';
+    });
+    body.addEventListener('input', () => {
+      if (autoPreview ? .checked !== false) updatePreview();
+    });
+    excerpt.addEventListener('input', () => {
+      if (autoPreview ? .checked !== false) updatePreview();
+    });
+    category.addEventListener('change', () => {
+      if (autoPreview ? .checked !== false) updatePreview();
+    });
+    minutes.addEventListener('input', () => {
+      if (autoPreview ? .checked !== false) updatePreview();
+    });
+    autoPreview ? .addEventListener('change', () => {
+      if (autoPreview.checked) updatePreview();
+    });
+
+    function syncToForm(a) {
+      current = {
+        ...current,
+        ...a
+      };
+      title.value = a.title || '';
+      slug.value = a.slug || '';
+      excerpt.value = a.excerpt || '';
       category.value = a.category || 'Maintenance';
       minutes.value = a.minutes || 6;
       body.value = a.body || '';
-      renderTags(a.tags||[]);
+      renderTags(a.tags || []);
       updatePreview();
     }
-  
-    el('resetBtn').onclick = ()=>{ syncToForm({ slug:'', title:'', excerpt:'', category:'Maintenance', minutes:6, tags:[], body:'' }); };
-  
+
+    el('resetBtn').onclick = () => {
+      syncToForm({
+        slug: '',
+        title: '',
+        excerpt: '',
+        category: 'Maintenance',
+        minutes: 6,
+        tags: [],
+        body: ''
+      });
+    };
+
     // ======= Save (single, robust handler) =======
-    async function handleSave(e){
+    async function handleSave(e) {
       try {
         e.preventDefault();
-        if (!supabase) { alert('Not ready yet. Try again.'); return; }
-  
+        if (!supabase) {
+          alert('Not ready yet. Try again.');
+          return;
+        }
+
         const payload = {
           slug: slug.value.trim(),
           title: title.value.trim(),
@@ -307,57 +403,167 @@ Your content here…"></textarea>
           body: body.value,
           category: category.value,
           tags: current.tags,
-          minutes: Number(minutes.value || 6)
+          minutes: Number(minutes.value || 6),
+          cover_url: current.cover_url || null,
+  // gallery: current.gallery || []   // optional, if you add UI for multiple images
         };
-        if (!payload.slug || !payload.title) { alert('Title and slug are required.'); return; }
-  
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { alert('Session expired. Please sign in again.'); location.assign('/admin/login.html'); return; }
-  
-        saveBtn.disabled = true; saveStatus.textContent = 'Saving…';
-  
+        if (!payload.slug || !payload.title) {
+          alert('Title and slug are required.');
+          return;
+        }
+
+        const {
+          data: {
+            session
+          }
+        } = await supabase.auth.getSession();
+        if (!session) {
+          alert('Session expired. Please sign in again.');
+          location.assign('/admin/login.html');
+          return;
+        }
+
+        saveBtn.disabled = true;
+        saveStatus.textContent = 'Saving…';
+
         const ctrl = new AbortController();
         const t = setTimeout(() => ctrl.abort(), 20000);
-  
+
         const res = await fetch('/.netlify/functions/upsert-article', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
           body: JSON.stringify(payload),
           signal: ctrl.signal
         });
-  
+
         const text = await res.text();
-        if (!res.ok) { console.error('Save error', res.status, text); alert(`Save failed (${res.status}): ${text}`); return; }
+        if (!res.ok) {
+          console.error('Save error', res.status, text);
+          alert(`Save failed (${res.status}): ${text}`);
+          return;
+        }
         showToast('Saved');
       } catch (err) {
         if (err.name === 'AbortError') alert('Save timed out.');
         else alert(`Save error: ${err.message || String(err)}`);
       } finally {
-        saveBtn.disabled = false; saveStatus.textContent = '';
+        saveBtn.disabled = false;
+        saveStatus.textContent = '';
       }
     }
-  
-    function showToast(msg){
+
+    function showToast(msg) {
       const t = document.getElementById('toast');
       t.firstElementChild.textContent = msg;
       t.classList.remove('hidden');
-      setTimeout(()=> t.classList.add('hidden'), 1400);
+      setTimeout(() => t.classList.add('hidden'), 1400);
     }
-  
+
+    // Build a safe path and upload a file to Supabase Storage (public bucket)
+    async function uploadFileToBucket(file, subpath) {
+      if (!file) throw new Error('No file selected');
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not signed in');
+
+      // Clean names
+      const cleanSlug = (slug.value || 'untitled').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+
+      const path = `${user.id}/${cleanSlug}/${subpath}/${Date.now()}-${cleanName}`;
+      const {
+        data,
+        error
+      } = await supabase.storage
+        .from('article-images')
+        .upload(path, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      // Get a public URL
+      const {
+        data: pub
+      } = supabase.storage.from('article-images').getPublicUrl(data.path);
+      return pub.publicUrl; // e.g. https://xyz.supabase.co/storage/v1/object/public/article-images/...
+    }
+
+    async function onCoverSelected() {
+      const f = document.getElementById('coverFile').files ? . [0];
+      if (!f) return;
+      try {
+        const url = await uploadFileToBucket(f, 'cover');
+        // store for submit + show preview
+        current.cover_url = url;
+        const wrap = document.getElementById('coverPreview');
+        wrap.innerHTML = `<img src="${url}" alt="Cover" class="mt-2 max-h-40 rounded-lg border border-slate-200" />
+                      <div class="text-xs text-slate-600 break-all mt-1">${url}</div>`;
+      } catch (e) {
+        alert(`Cover upload failed: ${e.message || e}`);
+      }
+    }
+
+    function insertAtCursor(textarea, text) {
+      const start = textarea.selectionStart ? ? textarea.value.length;
+      const end = textarea.selectionEnd ? ? textarea.value.length;
+      const before = textarea.value.slice(0, start);
+      const after = textarea.value.slice(end);
+      textarea.value = before + text + after;
+      // put cursor after inserted text
+      const pos = start + text.length;
+      textarea.selectionStart = textarea.selectionEnd = pos;
+      textarea.focus();
+      updatePreview();
+    }
+
+    async function uploadInlineImage() {
+      // prompt for file via hidden input
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = async () => {
+        const f = input.files ? . [0];
+        if (!f) return;
+        try {
+          const url = await uploadFileToBucket(f, 'inline');
+          // Insert Markdown at cursor
+          const alt = prompt('Alt text for the image?', '') || 'image';
+          insertAtCursor(body, `![${alt}](${url})`);
+        } catch (e) {
+          alert(`Image upload failed: ${e.message || e}`);
+        }
+      };
+      input.click();
+    }
+
     // ======= Boot =======
-    (async function boot(){
+    (async function boot() {
       await initSupabase();
       const ok = await requireAdmin();
       if (!ok) return; // redirected
-  
-      supabase.auth.onAuthStateChange(async ()=>{
-        const { data:{ user } } = await supabase.auth.getUser();
-        if(!user) location.assign('/admin/login.html');
+
+      supabase.auth.onAuthStateChange(async () => {
+        const {
+          data: {
+            user
+          }
+        } = await supabase.auth.getUser();
+        if (!user) location.assign('/admin/login.html');
       });
-  
+
       const form = document.getElementById('editor');
       form.addEventListener('submit', handleSave);
-  
+      coverFile.addEventListener('change', onCoverSelected);
+      btnUploadInline.addEventListener('click', uploadInlineImage);
+
       syncToForm(current);
       updatePreview();
     })();
