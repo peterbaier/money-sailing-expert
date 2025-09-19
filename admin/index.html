@@ -236,7 +236,7 @@
         data,
         error
       } = await supabase.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
-      if (error || !data ? .is_admin) {
+      if (error || !data?.is_admin) {
         await supabase.auth.signOut();
         location.assign('/admin/login.html');
         return false;
@@ -340,24 +340,24 @@
       if (!slug.dataset.touched) {
         slug.value = toSlug(title.value);
       }
-      if (autoPreview ? .checked !== false) updatePreview();
+      if (autoPreview?.checked !== false) updatePreview();
     });
     slug.addEventListener('input', () => {
       slug.dataset.touched = '1';
     });
     body.addEventListener('input', () => {
-      if (autoPreview ? .checked !== false) updatePreview();
+      if (autoPreview?.checked !== false) updatePreview();
     });
     excerpt.addEventListener('input', () => {
-      if (autoPreview ? .checked !== false) updatePreview();
+      if (autoPreview?.checked !== false) updatePreview();
     });
     category.addEventListener('change', () => {
-      if (autoPreview ? .checked !== false) updatePreview();
+      if (autoPreview?.checked !== false) updatePreview();
     });
     minutes.addEventListener('input', () => {
-      if (autoPreview ? .checked !== false) updatePreview();
+      if (autoPreview?.checked !== false) updatePreview();
     });
-    autoPreview ? .addEventListener('change', () => {
+    autoPreview?.addEventListener('change', () => {
       if (autoPreview.checked) updatePreview();
     });
 
@@ -498,7 +498,7 @@
     }
 
     async function onCoverSelected() {
-      const f = document.getElementById('coverFile').files ? . [0];
+      const f = document.getElementById('coverFile').files?.[0];
       if (!f) return;
       try {
         const url = await uploadFileToBucket(f, 'cover');
@@ -513,8 +513,8 @@
     }
 
     function insertAtCursor(textarea, text) {
-      const start = textarea.selectionStart ? ? textarea.value.length;
-      const end = textarea.selectionEnd ? ? textarea.value.length;
+      const start = textarea.selectionStart ?? textarea.value.length;
+      const end = textarea.selectionEnd ?? textarea.value.length;
       const before = textarea.value.slice(0, start);
       const after = textarea.value.slice(end);
       textarea.value = before + text + after;
@@ -531,7 +531,7 @@
       input.type = 'file';
       input.accept = 'image/*';
       input.onchange = async () => {
-        const f = input.files ? . [0];
+        const f = input.files?.[0];
         if (!f) return;
         try {
           const url = await uploadFileToBucket(f, 'inline');
