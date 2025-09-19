@@ -136,23 +136,24 @@
           </label>
         </div>
 
+        <!-- Cover image -->
+        <label class="block">
+          <span class="text-sm font-medium text-slate-700">Cover image</span>
+          <input id="coverFile" type="file" accept="image/*" class="mt-1 block w-full rounded-xl border-slate-300" />
+          <div id="coverPreview" class="mt-2 text-sm text-slate-600"></div>
+        </label>
+
+        <!-- Upload inline image (inserts Markdown at cursor) -->
+        <div class="flex items-center gap-2">
+          <button id="btnUploadInline" type="button"
+            class="rounded-xl px-3 py-2 border border-slate-300 hover:bg-slate-50">
+            Upload inline image
+          </button>
+          <span class="text-xs text-slate-500">Inserts <code>![alt](url)</code> at cursor</span>
+        </div>
+
         <label class="block">
           <span class="text-sm font-medium text-slate-700">Body (Markdown)</span>
-          <!-- Cover image -->
-          <label class="block">
-            <span class="text-sm font-medium text-slate-700">Cover image</span>
-            <input id="coverFile" type="file" accept="image/*" class="mt-1 block w-full rounded-xl border-slate-300" />
-            <div id="coverPreview" class="mt-2 text-sm text-slate-600"></div>
-          </label>
-
-          <!-- Upload inline image (inserts Markdown at cursor) -->
-          <div class="flex items-center gap-2">
-            <button id="btnUploadInline" type="button"
-              class="rounded-xl px-3 py-2 border border-slate-300 hover:bg-slate-50">
-              Upload inline image
-            </button>
-            <span class="text-xs text-slate-500">Inserts <code>![alt](url)</code> at cursor</span>
-          </div>
           <textarea id="body" rows="16"
             class="mt-1 w-full rounded-xl border-slate-300 font-mono leading-6 focus:border-ocean-500 focus:ring-ocean-500"
             placeholder="## Heading
@@ -405,7 +406,7 @@
           tags: current.tags,
           minutes: Number(minutes.value || 6),
           cover_url: current.cover_url || null,
-  // gallery: current.gallery || []   // optional, if you add UI for multiple images
+          // gallery: current.gallery || []   // optional, if you add UI for multiple images
         };
         if (!payload.slug || !payload.title) {
           alert('Title and slug are required.');
